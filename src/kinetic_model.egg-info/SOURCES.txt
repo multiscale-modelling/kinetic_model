@@ -5,6 +5,12 @@ src/kinetic_model.egg-info/PKG-INFO
 src/kinetic_model.egg-info/SOURCES.txt
 src/kinetic_model.egg-info/dependency_links.txt
 src/kinetic_model.egg-info/top_level.txt
+src/kinetic_model/constants/adsorption.py
+src/kinetic_model/constants/diffusion.py
+src/kinetic_model/core/diffusion.py
+src/kinetic_model/core/eyring.py
+src/kinetic_model/core/reactor.py
 src/kinetic_model/data/__init__.py
 src/kinetic_model/data/adsorption.py
 src/kinetic_model/data/diffusion.py
+src/kinetic_model/simulation/reaction_list_creator.py
