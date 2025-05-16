@@ -6,4 +6,5 @@ src/kinetic_model.egg-info/SOURCES.txt
 src/kinetic_model.egg-info/dependency_links.txt
 src/kinetic_model.egg-info/top_level.txt
 src/kinetic_model/data/__init__.py
+src/kinetic_model/data/adsorption.py
 src/kinetic_model/data/diffusion.py
