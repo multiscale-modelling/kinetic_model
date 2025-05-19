@@ -8,7 +8,6 @@ from kinetic_model.constants.diffusion import DiffusionLinear
 from kinetic_model.constants.adsorption import AdsorptionKNN
 from kinetic_model.simulation.reaction_list_creator import make_reaction_list, prepare_constants
 from kinetic_model.core.diffusion import Reaction_Diffusion
-from kinetic_model.constants.energy_profile import EnergyPlaceholder
 
 
 class ReactorSimulation:
@@ -49,6 +48,7 @@ class ReactorSimulation:
         initial_concs: dict,
         diff_model_path: str,
         ads_model_path: str,
+        energy_model: object,
     ):
         self.N = N
         self.T = T
@@ -64,8 +64,8 @@ class ReactorSimulation:
         self.diff_model = load(diff_model_path)
         self.ads_model = load(ads_model_path)
         # energy barrier placeholder
-        self.energy_model = EnergyPlaceholder(pressure=self.pressure, temperature=self.T)
-        self.barrier_params = self.energy_model.get_params()
+        self.energy_model = energy_model(pressure=self.pressure, temperature=self.T)
+        self.barrier_params = self.energy_model.get_params_basic()
         self.results = None
 
     def _make_dataframe(self) -> Tuple[pd.DataFrame, list]:
