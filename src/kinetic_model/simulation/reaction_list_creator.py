@@ -110,6 +110,7 @@ def prepare_constants_chemisorp(
     delta_ads_coord_cat_cn: float = 0.0,
     delta_recomb: float = 0.0,
     diffusion_rates: Dict[int, float] = None,
+    temperature: float = 300,
 ) -> Dict[str, Tuple[float, float]]:
     """
     For each n=2,4,…,N, grab the appropriate ΔG‡_fwd/ΔG‡_rev tuple from barrier_params
@@ -132,13 +133,13 @@ def prepare_constants_chemisorp(
     
     for key, val in barrier_params.items():
         if 'insertion' in key:
-            consts[f'k_{key}'] = compute_rate(val, T=300, delta_E=delta_ins)
+            consts[f'k_{key}'] = compute_rate(val, T=temperature, delta_E=delta_ins)
         elif 'recombination' in key:
-            consts[f'k_{key}'] = compute_rate(val, T=300, delta_E=delta_recomb)
+            consts[f'k_{key}'] = compute_rate(val, T=temperature, delta_E=delta_recomb)
         elif 'coordination_Cat_Cn' in key:
-            consts[f'k_{key}'] = compute_rate(val, T=300, delta_E=delta_ads_coord_cat_cn)
+            consts[f'k_{key}'] = compute_rate(val, T=temperature, delta_E=delta_ads_coord_cat_cn)
         else:
-            consts[f'k_{key}'] = compute_rate(val, T=300)
+            consts[f'k_{key}'] = compute_rate(val, T=temperature)
     # Diffusion constants per n
     if diffusion_rates:
         for n, kdiff in diffusion_rates.items():

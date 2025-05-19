@@ -166,3 +166,129 @@ class ReactorSimulation:
 
         return dist, prob_ts
 
+
+from kinetic_model.simulation.reaction_list_creator import (
+    prepare_constants_chemisorp,
+    make_reaction_list_chemisorp,
+)
+from kinetic_model.constants.energy_profile import EnergyPlaceholder
+from kinetic_model.core.diffusion import Reaction_Diffusion
+import numpy as np
+import joblib
+import pandas as pd
+import re
+
+
+class ReactorSimulationChemisorption:
+    def __init__(
+        self,
+        N,
+        T,
+        pressure,
+        L,
+        delta_ins=0.0,
+        delta_ads_coord_cat_cn=0.0,
+        delta_recomb=0.0,
+        time_hours=2.0,
+        n_steps=10000,
+        initial_concs={'Cat': 1e-2, 'C2': 1},
+        energy_model=EnergyPlaceholder,
+        diff_model_path='../data/processed/diffusion_model.pkl',
+        ads_model_path='../data/processed/knn_adsorption_model.pkl'
+    ):
+        self.N = N
+        self.T = T
+        self.pressure = pressure
+        self.L = L
+        self.initial_concs = initial_concs
+        self.time = np.linspace(0, time_hours * 3600, n_steps)
+
+        # --- Load ML models ---
+        self.diff_model = joblib.load(diff_model_path)
+        self.ads_model = joblib.load(ads_model_path)
+        self.energy_model = energy_model(pressure=pressure, temperature=T)
+
+        # --- Build features ---
+        X = pd.DataFrame({
+            'pressure_bar': [pressure] * N,
+            'temperature':   [T] * N,
+            'n':             ([i for i in range(2, N + 1, 2)] * 2),
+            'adsorption_type_num': [0] * (N//2) + [1] * (N//2),
+        })
+
+        # --- Diffusion constants ---
+        diffusion = self.diff_model.predict(X) / (L * 1e-9)
+        self.diffusion_constants = {
+            (i + 1) * 2: diffusion[i]
+            for i in range(N // 2)
+        }
+
+        # --- Adsorption capacities ---
+        adsorb = self.ads_model.predict(X)
+        self.capacity = {
+            f'C{(i + 1) * 2}': adsorb[i]
+            for i in range(N // 2)
+        }
+        self.capacity.update({
+            f'C{(i + 1) * 2}_out': adsorb[i] - adsorb[i + N//2]
+            for i in range(N // 2)
+        })
+
+        # --- Rate constants ---
+        barrier_params = self.energy_model.get_chemisorb_params()
+        constants = prepare_constants_chemisorp(
+            barrier_params,
+            n_max=self.N,
+            delta_ins=delta_ins,
+            delta_ads_coord_cat_cn=delta_ads_coord_cat_cn,
+            delta_recomb=delta_recomb,
+            diffusion_rates=self.diffusion_constants,
+            temperature=self.T
+        )
+
+        # --- Reaction list ---
+        reaction_list = make_reaction_list_chemisorp(
+            n_max=self.N,
+            consts=constants,
+            diffusion_rates=self.diffusion_constants,
+            include_diffusion=True
+        )
+
+        # --- Reactor solver ---
+        self.reactor = Reaction_Diffusion(
+            reactions=reaction_list,
+            capacity=self.capacity
+        )
+
+
+    def run(self):
+        """
+        Solve the reaction–diffusion ODEs.
+        Returns:
+          pd.DataFrame of concentrations vs. time (columns are species).
+        """
+        return self.reactor.solve(
+            initial_concs_dict=self.initial_concs,
+            time_points=self.time
+        )
+
+
+    def get_distribution(self, result_df):
+        """
+        Compute final-time oligomer distribution from the solver output.
+        Returns a DataFrame with columns ['n','concentration','probability'].
+        """
+        # pick only Cn and Cn_out columns
+        pat = re.compile(r'\bC(\d+)(?:_out)?$')
+        cols = [c for c in result_df.columns if pat.match(c)]
+        final = result_df[cols].iloc[-1]
+        df = final.reset_index(name='concentration')
+        df['n'] = df['index'].str.extract(r'C(\d+)').astype(int)
+        # sum e.g. C4 + C4_out
+        df = df.groupby('n', as_index=False).sum(numeric_only=True)
+        # probability over n>=4 (exclude monomer)
+        total = df.loc[df['n']>=4, 'concentration'].sum()
+        df['probability'] = df['concentration'] / total
+        # set monomer NaN
+        df.loc[df['n']==2, 'probability'] = np.nan
+        return df
