@@ -57,8 +57,8 @@ def patch_all(monkeypatch):
     monkeypatch.setattr(rr_mod, 'load', fake_load)
 
     # 2) Stub out prepare_constants & make_reaction_list
-    monkeypatch.setattr(rr_mod, 'prepare_constants', lambda *args, **kwargs: {})
-    monkeypatch.setattr(rr_mod, 'make_reaction_list', lambda *args, **kwargs: [])
+    monkeypatch.setattr(rr_mod, 'prepare_constants_basic', lambda *args, **kwargs: {})
+    monkeypatch.setattr(rr_mod, 'make_reaction_list_basic', lambda *args, **kwargs: [])
 
     # 3) Replace the actual solver with our DummySolver
     monkeypatch.setattr(rr_mod, 'Reaction_Diffusion', DummySolver)

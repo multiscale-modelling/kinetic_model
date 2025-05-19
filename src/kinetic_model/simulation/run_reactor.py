@@ -6,7 +6,7 @@ from typing import Tuple
 
 from kinetic_model.constants.diffusion import DiffusionLinear
 from kinetic_model.constants.adsorption import AdsorptionKNN
-from kinetic_model.simulation.reaction_list_creator import make_reaction_list, prepare_constants
+from kinetic_model.simulation.reaction_list_creator import make_reaction_list_basic, prepare_constants_basic
 from kinetic_model.core.diffusion import Reaction_Diffusion
 
 
@@ -101,7 +101,7 @@ class ReactorSimulation:
         diffusion_rates = self._calc_diffusion_constants(df, idx)
         capacity = self._calc_capacity(df, idx)
         # prepare reaction constants
-        consts = prepare_constants(
+        consts = prepare_constants_basic(
             self.barrier_params,
             delta_ins=self.delta_ins,
             delta_ads=self.delta_ads,
@@ -110,7 +110,7 @@ class ReactorSimulation:
             T=self.T,
         )
         # full reaction list
-        reactions = make_reaction_list(
+        reactions = make_reaction_list_basic(
             self.N,
             consts,
             include_diffusion=True

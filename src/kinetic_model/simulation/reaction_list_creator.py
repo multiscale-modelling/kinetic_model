@@ -15,7 +15,7 @@ def compute_rate(Ea, T=300, delta_E=None):
     return Eyring_k(Ea, T)
 
 
-def prepare_constants(barrier_params, n_max, diffusion_rates=None, T=300,
+def prepare_constants_basic(barrier_params, n_max, diffusion_rates=None, T=300,
                       clamp=(1e-7, 1e7), delta_ins=None, delta_ads=None):
     """
     Build a constants dict:
@@ -57,7 +57,7 @@ def prepare_constants(barrier_params, n_max, diffusion_rates=None, T=300,
     return consts
 
 
-def make_reaction_list(n_max, constants, include_diffusion=False):
+def make_reaction_list_basic(n_max, constants, include_diffusion=False):
     """
     Generate reaction list up to chain length n_max (even):
       - insertion: uses constants['k_ins'], ['k_deins']
@@ -92,3 +92,73 @@ def make_reaction_list(n_max, constants, include_diffusion=False):
     rxns = [r for r in rxns if cutoff not in r[0]]
     return rxns
 
+
+from typing import Dict, Tuple, List
+from kinetic_model.constants.energy_profile import EnergyPlaceholder
+
+from typing import Dict, Tuple, List
+
+
+def prepare_constants_chemisorp(
+    barrier_params: Dict[str, Tuple[float, float]],
+    n_max: int,
+) -> Dict[str, Tuple[float, float]]:
+    """
+    For each n=2,4,…,N, grab the appropriate ΔG‡_fwd/ΔG‡_rev tuple from barrier_params
+    and map it to the exact reaction string.
+
+    Expects barrier_params to contain:
+      - 'k_coordination_Cat_C2'
+      - 'k_coordination_CatC2_C2'
+      - 'k_coordination_CatCn_C2'
+      - 'k_coordination_CatC2_Cn'
+      - 'k_chemisorption_Cat_C2'
+      - 'k_chemisorption_Cat_Cn'
+      - 'k_insertion_CatCn_C2'
+      - 'k_recombination_CatCn_C2'
+    """
+    consts: Dict[str, Tuple[float, float]] = {}
+
+    # 1) Coordination at Cat
+    consts["Cat + C2 <-> Cat(C2)"]                = barrier_params["k_coordination_Cat_C2"]
+    consts["CatC2 + C2 <-> CatC2(C2)"]            = barrier_params["k_coordination_CatC2_C2"]
+    for n in range(4, n_max+1, 2):
+        consts[f"CatC{n} + C2 <-> CatC{n}(C2)"]    = barrier_params["k_coordination_CatCn_C2"]
+        consts[f"CatC2 + C{n} <-> CatC2(C{n})"]    = barrier_params["k_coordination_CatC2_Cn"]
+
+    # 2) Chemisorption
+    consts["Cat(C2) <-> CatC2"]                   = barrier_params["k_chemisorption_Cat_C2"]
+    for n in range(4, n_max+1, 2):
+        consts[f"Cat(C{n}) <-> CatC{n}"]           = barrier_params["k_chemisorption_Cat_Cn"]
+
+    # 3) Insertion of C2
+    for n in range(2, n_max-1, 2):
+        consts[f"CatC{n}(C2) <-> CatC{n+2}"]       = barrier_params["k_insertion_CatCn_C2"]
+
+    # 4) Recombination
+    for n in range(2, n_max+1, 2):
+        consts[f"CatC{n}(C2) <-> Cat(C2)C{n}"]     = barrier_params["k_recombination_CatCn_C2"]
+
+    return consts
+
+
+def make_reaction_list_chemisorp(
+    consts: Dict[str, Tuple[float, float]],
+    diffusion_rates: Dict[int, float],
+    include_diffusion: bool = True
+) -> List[Tuple[str, float, float]]:
+    """
+    Turn the detailed constants dict into a full reaction list,
+    appending diffusion steps Cn <D> Cn_out if requested.
+    """
+    reactions: List[Tuple[str, float, float]] = []
+    # 1) all elementary steps
+    for rxn, (kf, kr) in consts.items():
+        reactions.append((rxn, kf, kr))
+
+    # 2) diffusion in/out
+    if include_diffusion:
+        for n, rate in diffusion_rates.items():
+            reactions.append((f"C{n} <D> C{n}_out", rate, rate))
+
+    return reactions

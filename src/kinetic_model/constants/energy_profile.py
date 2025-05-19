@@ -24,18 +24,28 @@ class EnergyPlaceholder:
         """
         return {
             # 1) Coordination at catalysis
-            'k_coordination_Cat_C2':       (-48.0,   48.0),
-            'k_coordination_CatC2_C2':     (-53.0,   53.0),
-            'k_coordination_CatCn_C2':     (-44.0,   44.0),
-            'k_coordination_CatC2_Cn':     (-61.0,   61.0),
+            'coordination_Cat_C2':       -48.0,
+          'decoordination_Cat_C2':        48.0,
+            'coordination_Cat_Cn':       -56.0,
+           'decoordination_Cat_Cn':       56.0,
+            'coordination_CatC2_C2':     -53.0,
+          'decoordination_CatC2_C2':      53.0,
+            'coordination_CatCn_C2':     -44.0,
+          'decoordination_CatCn_C2':      44.0,
+            'coordination_CatC2_Cn':     -61.0,
+          'decoordination_CatC2_Cn':      61.0,
 
             # 2) Chemisorption
-            'k_chemisorption_Cat_C2':      (6.0,    32.0),
-            'k_chemisorption_Cat_Cn':      (6.0,    29.0),
+            'chemisorption_Cat_C2':      6.0,
+            'dechemisorption_Cat_C2':    32.0,
+            'chemisorption_Cat_Cn':      6.0,
+            'dechemisorption_Cat_Cn':    29.0,
 
             # 3) Insertion of C2 into CatCn
-            'k_insertion_CatCn_C2':        (85.0,  101.0),
+            'insertion_CatCn_C2':        85.0,
+            'deinsertion_CatCn_C2':      101.0,
 
             # 4) Recombination (CatCn(C2) ↔ Cat(C2)Cn)
-            'k_recombination_CatCn_C2':    (85.0,   96.0),
+            'recombination_CatCn_C2':    85.0,
+            'derecombination_CatCn_C2':  96.0,
         }
