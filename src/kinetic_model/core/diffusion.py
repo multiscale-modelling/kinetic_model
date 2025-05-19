@@ -56,3 +56,4 @@ class Reaction_Diffusion(Reaction):
                     result[product].append((tuple(products), -reaction[2] * coefficient))
 
         self.reaction_dict = result  
+        self.sorted_keys = sorted(self.reaction_dict.keys())   

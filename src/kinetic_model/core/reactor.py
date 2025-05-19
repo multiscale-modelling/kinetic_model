@@ -47,7 +47,8 @@ class Reaction:
                 if is_back:
                     result[product].append((tuple(products), -reaction[2]))
 
-        self.reaction_dict = result          
+        self.reaction_dict = result       
+        self.sorted_keys = sorted(self.reaction_dict.keys())   
 
 
     def rate_of_change(self, concs, t):
@@ -91,8 +92,8 @@ class Reaction:
         # Getting sorted keys from the reaction dictionary
         if not hasattr(self, 'reaction_dict'):
             self.create_reaction_dict()
-        if not hasattr(self, 'sorted_keys'):
-            self.sorted_keys = sorted(self.reaction_dict.keys())
+        # if not hasattr(self, 'sorted_keys'):
+        #     self.sorted_keys = sorted(self.reaction_dict.keys())
 
         # Preparing a list of initial concentrations in the same order as sorted keys
         initial_concs = self.set_initial_concentrations(initial_concs_dict)

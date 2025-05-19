@@ -21,21 +21,21 @@ class DiffusionLinear(BaseEstimator):
         """
         Fit one linear model per n:
           1) Compute y_norm = D_TST / sqrt(T)
-          2) Fit scaler on T
+          2) Fit scaler on temperature
           3) For each n, fit LinearRegression(y_norm ~ scaled T)
         """
         df = data.copy()
         # 1) normalize
-        df['y_norm'] = df[D_col] / np.sqrt(df['T'])
+        df['y_norm'] = df[D_col] / np.sqrt(df['temperature'])
 
-        # 2) fit scaler on T
-        T_vals = df[['T']].to_numpy()
+        # 2) fit scaler on temperature
+        T_vals = df[['temperature']].to_numpy()
         self.scaler.fit(T_vals)
 
         # 3) fit per-group models
         for n_val in df['n'].unique():
             mask = df['n'] == n_val
-            X = df.loc[mask, ['T']].to_numpy()
+            X = df.loc[mask, ['temperature']].to_numpy()
             Xs = self.scaler.transform(X)
             y = df.loc[mask, 'y_norm'].to_numpy()
 
@@ -47,7 +47,7 @@ class DiffusionLinear(BaseEstimator):
 
     def predict(self, df: pd.DataFrame) -> np.ndarray:
         """
-        Predict raw D_TST for df with columns ['T','n'].
+        Predict raw D_TST for df with columns ['temperature','n'].
         Unseen n ⇒ np.nan.
         """
         preds = []
@@ -56,11 +56,11 @@ class DiffusionLinear(BaseEstimator):
             if model is None:
                 preds.append(np.nan)
             else:
-                X = np.array([[row['T']]])
+                X = np.array([[row['temperature']]])
                 Xs = self.scaler.transform(X)
                 y_norm = model.predict(Xs)[0]
                 # back-transform
-                preds.append(y_norm * np.sqrt(row['T']))
+                preds.append(y_norm * np.sqrt(row['temperature']))
         return np.array(preds)
 
     # allow call like diff_model(df)
