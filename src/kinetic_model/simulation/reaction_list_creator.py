@@ -99,50 +99,55 @@ from kinetic_model.constants.energy_profile import EnergyPlaceholder
 from typing import Dict, Tuple, List
 
 
+from typing import Dict, Tuple, List
+from kinetic_model.constants.energy_profile import EnergyPlaceholder
+
+from typing import Dict, Tuple, List
+
 def prepare_constants_chemisorp(
     barrier_params: Dict[str, Tuple[float, float]],
-    n_max: int,
+    n_max: int, delta_ins: float = 0.0, 
+    delta_ads_coord_cat_cn: float = 0.0,
+    delta_recomb: float = 0.0,
+    diffusion_rates: Dict[int, float] = None,
 ) -> Dict[str, Tuple[float, float]]:
     """
     For each n=2,4,…,N, grab the appropriate ΔG‡_fwd/ΔG‡_rev tuple from barrier_params
     and map it to the exact reaction string.
 
     Expects barrier_params to contain:
-      - 'k_coordination_Cat_C2'
-      - 'k_coordination_CatC2_C2'
-      - 'k_coordination_CatCn_C2'
-      - 'k_coordination_CatC2_Cn'
-      - 'k_chemisorption_Cat_C2'
-      - 'k_chemisorption_Cat_Cn'
-      - 'k_insertion_CatCn_C2'
-      - 'k_recombination_CatCn_C2'
+      - 'coordination_Cat_C2'
+      - 'coordination_CatC2_C2'
+      - 'coordination_CatCn_C2'
+      - 'coordination_CatC2_Cn'
+      - 'chemisorption_Cat_C2'
+      - 'chemisorption_Cat_Cn'
+      - 'insertion_CatCn_C2'
+      - 'recombination_CatCn_C2'
     """
     consts: Dict[str, Tuple[float, float]] = {}
+    
 
     # 1) Coordination at Cat
-    consts["Cat + C2 <-> Cat(C2)"]                = barrier_params["k_coordination_Cat_C2"]
-    consts["CatC2 + C2 <-> CatC2(C2)"]            = barrier_params["k_coordination_CatC2_C2"]
-    for n in range(4, n_max+1, 2):
-        consts[f"CatC{n} + C2 <-> CatC{n}(C2)"]    = barrier_params["k_coordination_CatCn_C2"]
-        consts[f"CatC2 + C{n} <-> CatC2(C{n})"]    = barrier_params["k_coordination_CatC2_Cn"]
-
-    # 2) Chemisorption
-    consts["Cat(C2) <-> CatC2"]                   = barrier_params["k_chemisorption_Cat_C2"]
-    for n in range(4, n_max+1, 2):
-        consts[f"Cat(C{n}) <-> CatC{n}"]           = barrier_params["k_chemisorption_Cat_Cn"]
-
-    # 3) Insertion of C2
-    for n in range(2, n_max-1, 2):
-        consts[f"CatC{n}(C2) <-> CatC{n+2}"]       = barrier_params["k_insertion_CatCn_C2"]
-
-    # 4) Recombination
-    for n in range(2, n_max+1, 2):
-        consts[f"CatC{n}(C2) <-> Cat(C2)C{n}"]     = barrier_params["k_recombination_CatCn_C2"]
-
+    
+    for key, val in barrier_params.items():
+        if 'insertion' in key:
+            consts[f'k_{key}'] = compute_rate(val, T=300, delta_E=delta_ins)
+        elif 'recombination' in key:
+            consts[f'k_{key}'] = compute_rate(val, T=300, delta_E=delta_recomb)
+        elif 'coordination_Cat_Cn' in key:
+            consts[f'k_{key}'] = compute_rate(val, T=300, delta_E=delta_ads_coord_cat_cn)
+        else:
+            consts[f'k_{key}'] = compute_rate(val, T=300)
+    # Diffusion constants per n
+    if diffusion_rates:
+        for n, kdiff in diffusion_rates.items():
+            if 2 <= n <= len(diffusion_rates):
+                consts[f'k_diff_{n}'] = kdiff
     return consts
 
-
 def make_reaction_list_chemisorp(
+        n_max: int,
     consts: Dict[str, Tuple[float, float]],
     diffusion_rates: Dict[int, float],
     include_diffusion: bool = True
@@ -152,9 +157,27 @@ def make_reaction_list_chemisorp(
     appending diffusion steps Cn <D> Cn_out if requested.
     """
     reactions: List[Tuple[str, float, float]] = []
-    # 1) all elementary steps
-    for rxn, (kf, kr) in consts.items():
-        reactions.append((rxn, kf, kr))
+
+    # 1) coordination
+    reactions.append((f"Cat + C2 <-> Cat(C2)", consts['k_coordination_Cat_C2'], consts['k_decoordination_Cat_C2']))
+    reactions.append((f"CatC2 + C2 <-> CatC2(C2)", consts['k_coordination_CatC2_C2'], consts['k_decoordination_CatC2_C2']))
+
+    for n in range(4, n_max + 1, 2):
+        reactions.append((f"CatC{n} + C2 <-> CatC{n}(C2)", consts[f'k_coordination_CatCn_C2'], consts['k_decoordination_CatCn_C2']))
+        reactions.append((f"CatC2 + C{n} <-> CatC2(C{n})", consts[f'k_coordination_CatC2_Cn'], consts['k_decoordination_CatC2_Cn']))
+        reactions.append((f"Cat + C{n} <-> Cat(C{n})", consts[f'k_coordination_Cat_Cn'], consts['k_decoordination_Cat_Cn']))
+    # 2) chemisorption
+    reactions.append((f"Cat(C2) <-> CatC2", consts['k_chemisorption_Cat_C2'], consts['k_dechemisorption_Cat_C2']))
+    for n in range(4, n_max + 1, 2):
+        reactions.append((f"Cat(C{n}) <-> CatC{n}", consts[f'k_chemisorption_Cat_Cn'], consts['k_dechemisorption_Cat_Cn']))
+    
+    # 3) insertion
+    for n in range(2, n_max, 2):
+        reactions.append((f"CatC{n}(C2) <-> CatC{n+2}", consts[f'k_insertion_CatCn_C2'], consts['k_deinsertion_CatCn_C2']))
+    
+    # 4) recombination
+    for n in range(4, n_max + 1, 2):
+        reactions.append((f"CatC{n}(C2) <-> CatC2(C{n})", consts[f'k_recombination_CatCn_C2'], consts['k_derecombination_CatCn_C2']))
 
     # 2) diffusion in/out
     if include_diffusion:
