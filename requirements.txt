@@ -16,7 +16,7 @@ jedi @ file:///home/conda/feedstock_root/build_artifacts/jedi_1733300866624/work
 joblib==1.5.0
 jupyter_client @ file:///home/conda/feedstock_root/build_artifacts/jupyter_client_1733440914442/work
 jupyter_core @ file:///home/conda/feedstock_root/build_artifacts/jupyter_core_1727163409502/work
--e git+ssh://git@gitlab.kit.edu/aleksandr.avdoshin/kinetic_model.git@a83354e8c100fdd28558fc24356c2f72cb4df4bb#egg=kinetic_model
+-e git+ssh://git@gitlab.kit.edu/aleksandr.avdoshin/kinetic_model.git@9735ba42322bea66899f957e9c09d87b05264473#egg=kinetic_model
 kiwisolver==1.4.8
 lightgbm==4.6.0
 matplotlib==3.10.1
