@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsRegressor
-import joblib
+from sklearn.linear_model import LinearRegression
 
 class AdsorptionKNN(BaseEstimator):
     """
@@ -65,3 +65,57 @@ class AdsorptionKNN(BaseEstimator):
     __call__ = predict
 
 
+class AdsorptionKNNSlopeExtrap(AdsorptionKNN):
+    """
+    - Inherits all of AdsorptionKNN (log–KNN for type 0; raw–KNN for type 1).
+    - For n<=10: exactly the base-class behavior.
+    - For each distinct (pressure,temperature):
+        * type 0 & n>10: extrapolate by the 2-point slope in log-space between n=8 and n=10.
+        * type 1 & n>10: hold flat at the prediction for n=10.
+    """
+    def predict(self, df: pd.DataFrame) -> np.ndarray:
+        # 1) get the vanilla KNN preds for everything
+        base_preds = super().predict(df)
+        df2 = df.reset_index(drop=True)
+        preds = base_preds.copy()
+
+        # 2) group by (pressure,temperature,adsorption_type_num)
+        grp_inds = df2.groupby(
+            ['pressure_bar','temperature','adsorption_type_num']
+        ).groups
+
+        for (p, T, ads_t), indices in grp_inds.items():
+            idxs = list(indices)
+
+            # TYPE 0 extrapolation
+            if ads_t == 0:
+                # find the single preds at n=8 and n=10
+                mask8  = (df2['n']==8)
+                mask10 = (df2['n']==10)
+                y8s  = [base_preds[i] for i in idxs if mask8.loc[i]]
+                y10s = [base_preds[i] for i in idxs if mask10.loc[i]]
+                if len(y8s)==1 and len(y10s)==1 and not np.isnan(y8s[0]) and not np.isnan(y10s[0]):
+                    ℓ8  = np.log(y8s[0])
+                    ℓ10 = np.log(y10s[0])
+                    slope = (ℓ10 - ℓ8) / 2.0  # over Δn = 2
+                    # apply to every idx with n>10 in this group
+                    for i in idxs:
+                        n_i = df2.at[i,'n']
+                        if n_i > 10:
+                            ℓn = ℓ10 + slope*(n_i - 10)
+                            preds[i] = np.exp(ℓn)
+
+            # TYPE 1 flat continuation
+            else:
+                # get the single pred at n=10
+                mask10 = (df2['n']==10)
+                y10s = [base_preds[i] for i in idxs if mask10.loc[i]]
+                if len(y10s)==1 and not np.isnan(y10s[0]):
+                    y10 = y10s[0]
+                    for i in idxs:
+                        if df2.at[i,'n'] > 10:
+                            preds[i] = y10
+
+        return preds
+
+    __call__ = predict
