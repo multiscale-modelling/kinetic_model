@@ -116,6 +116,7 @@ class ReactorSimulation:
             initial_concs_dict=self.initial_concs,
             time_points=times
         )
+        result.index = times
         # final distribution
         dist = self._calc_distribution(result)
         # time-series probabilities
@@ -128,6 +129,7 @@ class ReactorSimulation:
                     .T
 
         prob_ts = combined.div(combined.sum(axis=1), axis=0)
+        
         return dist, prob_ts
 
 

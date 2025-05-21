@@ -79,8 +79,8 @@ def test_reactor_simulation_distribution_and_ts():
     L = 10.0
     delta_ins = 1.0
     delta_ads = 1.0
-    time_hours = 0.001
-    n_steps = 5
+    time_hours = 1.0
+    n_steps = 100
     initial_concs = {'Cat': 0.1, 'C2': 0.2}
 
     sim = ReactorSimulation(
@@ -104,7 +104,6 @@ def test_reactor_simulation_distribution_and_ts():
     assert sim.energy_model.temperature == T
 
     dist, ts = sim.run()
-
     # --- final distribution checks ---
     assert isinstance(dist, pd.DataFrame)
     # We should have exactly two rows for n=2 and n=4
