@@ -1,0 +1,128 @@
+"1":
+  "1":
+    ethylene: 5
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "2":
+    ethylene: 4
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  TS_2-3:
+    ethylene: 4
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "3":
+    ethylene: 4
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  TS_3-4:
+    ethylene: 4
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "4":
+    ethylene: 4
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "5":
+    ethylene: 4
+    but-1-ene: 1
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "5a":
+    ethylene: 3
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "6":
+    ethylene: 3
+    but-1-ene: 1
+    hex-1-ene: 0
+    oct-1-ene: 0
+  TS_6-1p:
+    ethylene: 3
+    but-1-ene: 1
+    hex-1-ene: 0
+    oct-1-ene: 0
+  TS_6-1:
+    ethylene: 3
+    but-1-ene: 1
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "1p":
+    ethylene: 3
+    but-1-ene: 1
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "7":
+    ethylene: 3
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  TS_7-8:
+    ethylene: 3
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "8":
+    ethylene: 3
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+
+"5":
+  "5":
+    ethylene: 5
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "6":
+    ethylene: 4
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  TS_6-1:
+    ethylene: 4
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "1":
+    ethylene: 4
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "2":
+    ethylene: 3
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  TS_2-3:
+    ethylene: 3
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "3":
+    ethylene: 3
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  TS_3-4:
+    ethylene: 3
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "4":
+    ethylene: 3
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "5p":
+    ethylene: 3
+    but-1-ene: 1
+    hex-1-ene: 0
+    oct-1-ene: 0

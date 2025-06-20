@@ -11,8 +11,15 @@ src/kinetic_model/constants/energy_profile.py
 src/kinetic_model/core/diffusion.py
 src/kinetic_model/core/eyring.py
 src/kinetic_model/core/reactor.py
+src/kinetic_model/energy_profile/energy_processing.py
+src/kinetic_model/energy_profile/energy_profile.py
+src/kinetic_model/energy_profile/plotter.py
+src/kinetic_model/energy_profile/thermochemistry.py
+src/kinetic_model/energy_profile/utils.py
+src/kinetic_model/simulation/plot.py
 src/kinetic_model/simulation/reaction_list_creator.py
 src/kinetic_model/simulation/run_reactor.py
+src/kinetic_model/simulation/synthetic_data.py
 tests/test_core.py
 tests/test_diffusion_behavior.py
 tests/test_eyring.py

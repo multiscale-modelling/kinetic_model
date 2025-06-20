@@ -1,3 +1,4 @@
+ase==3.25.0
 asttokens @ file:///home/conda/feedstock_root/build_artifacts/asttokens_1733250440834/work
 comm @ file:///home/conda/feedstock_root/build_artifacts/comm_1733502965406/work
 contourpy==1.3.2
@@ -16,11 +17,12 @@ jedi @ file:///home/conda/feedstock_root/build_artifacts/jedi_1733300866624/work
 joblib==1.5.0
 jupyter_client @ file:///home/conda/feedstock_root/build_artifacts/jupyter_client_1733440914442/work
 jupyter_core @ file:///home/conda/feedstock_root/build_artifacts/jupyter_core_1727163409502/work
--e git+ssh://git@gitlab.kit.edu/aleksandr.avdoshin/kinetic_model.git@9735ba42322bea66899f957e9c09d87b05264473#egg=kinetic_model
+-e git+ssh://git@gitlab.kit.edu/aleksandr.avdoshin/kinetic_model.git@c17f3bfa7ab4d92f039d61ff89866390644273ac#egg=kinetic_model
 kiwisolver==1.4.8
 lightgbm==4.6.0
 matplotlib==3.10.1
 matplotlib-inline @ file:///home/conda/feedstock_root/build_artifacts/matplotlib-inline_1733416936468/work
+mpmath==1.3.0
 nest_asyncio @ file:///home/conda/feedstock_root/build_artifacts/nest-asyncio_1733325553580/work
 numpy==2.2.5
 packaging @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_packaging_1745345660/work
@@ -31,6 +33,7 @@ pickleshare @ file:///home/conda/feedstock_root/build_artifacts/pickleshare_1733
 pillow==11.2.1
 platformdirs @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_platformdirs_1742485085/work
 pluggy==1.6.0
+pointgroup==0.4.4
 prompt_toolkit @ file:///home/conda/feedstock_root/build_artifacts/prompt-toolkit_1744724089886/work
 psutil @ file:///croot/psutil_1736367091698/work
 ptyprocess @ file:///home/conda/feedstock_root/build_artifacts/ptyprocess_1733302279685/work/dist/ptyprocess-0.7.0-py2.py3-none-any.whl#sha256=92c32ff62b5fd8cf325bec5ab90d7be3d2a8ca8c8a3813ff487a8d2002630d1f
@@ -41,6 +44,7 @@ pyparsing==3.2.3
 pytest==8.3.5
 python-dateutil==2.9.0.post0
 pytz==2025.2
+PyYAML==6.0.2
 pyzmq @ file:///croot/pyzmq_1734687138743/work
 scikit-learn==1.6.1
 scipy==1.15.2
@@ -48,6 +52,7 @@ seaborn==0.13.2
 setuptools==78.1.1
 six==1.17.0
 stack_data @ file:///home/conda/feedstock_root/build_artifacts/stack_data_1733569443808/work
+sympy==1.14.0
 threadpoolctl==3.6.0
 tornado @ file:///croot/tornado_1733960490606/work
 traitlets @ file:///home/conda/feedstock_root/build_artifacts/traitlets_1733367359838/work
