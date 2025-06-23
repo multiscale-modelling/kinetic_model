@@ -48,8 +48,8 @@ class ReactorSimulation:
         # load ML models & basic barrier params
         self.diff_model = load(diff_model_path)
         self.ads_model  = load(ads_model_path)
-        self.energy_model = energy_model(pressure=pressure, temperature=T)
-        self.barrier_params = self.energy_model.get_params_basic()
+        self.energy_model = energy_model#(pressure=pressure, temperature=T)
+        self.barrier_params = self.energy_model.get_energy_barriers()
 
     def _make_dataframe(self):
         idx = list(range(2, self.N + 1, 2))
@@ -168,7 +168,7 @@ class ReactorSimulationChemisorption(ReactorSimulation):
         )
         self.delta_recomb = delta_recomb
         # override barrier_params to use chemisorption ones
-        self.barrier_params = self.energy_model.get_chemisorb_params()
+        self.barrier_params = self.energy_model.get_energy_barriers()
 
     def _build_solver(self):
         # reuse dataframe, diffusion, capacity from parent
