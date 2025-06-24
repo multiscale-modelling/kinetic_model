@@ -112,16 +112,16 @@ class ReactorSimulation:
     def run(self):
         solver = self._build_solver()
         times  = np.linspace(0, self.time_hours * 3600, self.n_steps)
-        result = solver.solve(
+        self._result = solver.solve(
             initial_concs_dict=self.initial_concs,
             time_points=times
         )
-        result.index = times
+        self._result.index = times
         # final distribution
-        dist = self._calc_distribution(result)
+        dist = self._calc_distribution(self._result)
         # time-series probabilities
-        olefin_cols = [c for c in result.columns if re.match(r'C\d+(_out)?$', c)]
-        ts = result[olefin_cols]
+        olefin_cols = [c for c in self._result.columns if re.match(r'C\d+(_out)?$', c)]
+        ts = self._result[olefin_cols]
         # new:
         combined = ts.T \
                     .groupby(lambda col: int(re.search(r'(\d+)', col).group(1))) \
@@ -173,8 +173,8 @@ class ReactorSimulationChemisorption(ReactorSimulation):
     def _build_solver(self):
         # reuse dataframe, diffusion, capacity from parent
         df, idx = self._make_dataframe()
-        diffusion_rates = self._calc_diffusion_constants(df, idx)
-        capacity       = self._calc_capacity(df, idx)
+        self._diffusion_rates = self._calc_diffusion_constants(df, idx)
+        self._capacity       = self._calc_capacity(df, idx)
 
         consts = prepare_constants_chemisorp(
             self.barrier_params,
@@ -182,13 +182,13 @@ class ReactorSimulationChemisorption(ReactorSimulation):
             delta_ins=self.delta_ins,
             delta_ads_coord_cat_cn=self.delta_ads,
             delta_recomb=self.delta_recomb,
-            diffusion_rates=diffusion_rates,
+            diffusion_rates=self._diffusion_rates,
             temperature=self.T
         )
-        reactions = make_reaction_list_chemisorp(
+        self._reactions = make_reaction_list_chemisorp(
             n_max=self.N,
             consts=consts,
-            diffusion_rates=diffusion_rates,
+            diffusion_rates=self._diffusion_rates,
             include_diffusion=True
         )
-        return Reaction_Diffusion(reactions=reactions, capacity=capacity)
+        return Reaction_Diffusion(reactions=self._reactions, capacity=self._capacity)

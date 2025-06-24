@@ -401,3 +401,31 @@ class EnergyProfile:
         self.ax.relim()
         self.ax.autoscale_view()
         plt.show()
+
+
+class EnergyProfileAxis(EnergyProfile):
+    def __init__(self, data: pd.DataFrame, energy_type, energy_unit, ax, fig=None):
+        """
+        Initialize with a pandas DataFrame and a user-supplied matplotlib axis.
+        """
+        self.data = data
+        self.ax = ax
+        self.fig = fig if fig is not None else ax.figure
+        self.energy_type = energy_type
+        self.energy_unit = energy_unit
+        self.levels = {}
+
+        unit_conversion = {
+            'eV': 1,
+            'kJ/mol': 1 * eV / kJ * _Nav,
+            'kcal/mol': 1 * eV / kcal * _Nav
+        }
+
+        energyType2Keywords = {
+            'Electronic energy': 'rel_E_eV',
+            'Enthalpy': 'rel_H_eV',
+            'Gibbs free energy': 'rel_G_eV'
+        }
+
+        self.energy_keyword = energyType2Keywords[energy_type]
+        self.unit_factor = unit_conversion[energy_unit]
