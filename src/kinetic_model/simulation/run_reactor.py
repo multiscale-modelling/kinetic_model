@@ -153,6 +153,7 @@ class ReactorSimulationChemisorption(ReactorSimulation):
         diff_model_path: str = '../data/processed/diffusion_model.pkl',
         ads_model_path: str = '../data/processed/knn_adsorption_model.pkl',
         energy_model: object = EnergyPlaceholder,
+        include_diffusion: bool = True
     ):
         # call ancestor init with delta_ads = delta_ads_coord_cat_cn
         super().__init__(
@@ -169,6 +170,7 @@ class ReactorSimulationChemisorption(ReactorSimulation):
         self.delta_recomb = delta_recomb
         # override barrier_params to use chemisorption ones
         self.barrier_params = self.energy_model.get_energy_barriers()
+        self.include_diffusion = include_diffusion
 
     def _build_solver(self):
         # reuse dataframe, diffusion, capacity from parent
@@ -189,6 +191,6 @@ class ReactorSimulationChemisorption(ReactorSimulation):
             n_max=self.N,
             consts=consts,
             diffusion_rates=self._diffusion_rates,
-            include_diffusion=True
+            include_diffusion=self.include_diffusion
         )
         return Reaction_Diffusion(reactions=self._reactions, capacity=self._capacity)
