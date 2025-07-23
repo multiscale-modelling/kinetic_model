@@ -3,8 +3,8 @@ import pandas as pd
 import re
 from joblib import load
 
-from kinetic_model.constants.diffusion import DiffusionLinear
-from kinetic_model.constants.adsorption import AdsorptionKNN
+from kinetic_model.constants.diffusion import *
+from kinetic_model.constants.adsorption import *
 from kinetic_model.simulation.reaction_list_creator import (
     make_reaction_list_basic,
     prepare_constants_basic,
@@ -194,3 +194,5 @@ class ReactorSimulationChemisorption(ReactorSimulation):
             include_diffusion=self.include_diffusion
         )
         return Reaction_Diffusion(reactions=self._reactions, capacity=self._capacity)
+
+
