@@ -252,3 +252,232 @@ class AdsorptionGPSlopeExtrap(AdsorptionGP):
         return preds
 
     __call__ = predict
+
+
+
+
+
+## ======================= Poly1DModel for adsorption capacity ======================
+
+import numpy as np
+import pandas as pd
+from dataclasses import dataclass
+from scipy.optimize import least_squares
+
+R = 8.314462618  # J/mol/K
+
+# ============================= Peng–Robinson (ethylene) =============================
+
+@dataclass
+class PREoS:
+    Tc: float = 282.33  # K
+    Pc: float = 5.02e6  # Pa
+    omega: float = 0.089
+
+    def _a_b(self):
+        a = 0.45724 * (R*self.Tc)**2 / self.Pc
+        b = 0.07780 * R*self.Tc / self.Pc
+        return a, b
+
+    def _z_phi_scalar(self, P, T):
+        a, b = self._a_b()
+        kappa = 0.37464 + 1.54226*self.omega - 0.26992*self.omega**2
+        alpha = (1 + kappa*(1 - np.sqrt(T/self.Tc)))**2
+        A = a*alpha*P/(R**2*T**2)
+        B = b*P/(R*T)
+        coeff = [1, -(1-B), (A - 3*B**2 - 2*B), -(A*B - B**2 - B**3)]
+        roots = np.roots(coeff)
+        Z = np.max(roots.real[np.isclose(roots.imag, 0)])
+        lnphi = (Z - 1) - np.log(Z - B) - (A/(2*np.sqrt(2)*B)) * \
+                np.log((Z + (1+np.sqrt(2))*B)/(Z + (1-np.sqrt(2))*B))
+        return Z, np.exp(lnphi)
+
+    def fugacity(self, P, T):  # Pa
+        P = np.atleast_1d(P).astype(float)
+        T = np.atleast_1d(T).astype(float)
+        f = np.empty_like(P, dtype=float)
+        for i, (p, t) in enumerate(zip(P, T)):
+            _, phi = self._z_phi_scalar(p, t)
+            f[i] = phi * p
+        return f
+
+    def rho_bulk(self, P, T):  # mol/m^3
+        # optional, for "out" if you want it later
+        P = np.atleast_1d(P).astype(float)
+        T = np.atleast_1d(T).astype(float)
+        Z = np.empty_like(P, dtype=float)
+        for i, (p, t) in enumerate(zip(P, T)):
+            z, _ = self._z_phi_scalar(p, t)
+            Z[i] = z
+        return P/(Z*R*T)
+
+# ================================ Langmuir helpers =================================
+
+class LangmuirEq:
+    @staticmethod
+    def n_abs(f, nmax, b):
+        return nmax * (b*f) / (1.0 + b*f)
+
+    @staticmethod
+    def henry_from_params(nmax, b):
+        return nmax * b  # KH
+
+    @staticmethod
+    def f_half(b):
+        return 1.0 / max(b, 1e-30)
+
+# =============================== Per-T isotherm fit ================================
+
+class PerTFitter:
+    """
+    Fit single-site Langmuir independently at every temperature:
+    n = nmax * b f / (1 + b f), where f = fugacity(P,T).
+    """
+    def __init__(self, eos: PREoS, nmax_lb: float = 1.0, b_bounds=(1e-12, 1e-3)):
+        self.eos = eos
+        self.nmax_lb = nmax_lb
+        self.b_bounds = b_bounds
+
+    def _fit_one_T(self, P, T, n):
+        f = self.eos.fugacity(P, np.full_like(P, float(T)))
+        # inits
+        nmax0 = max(1.05*np.max(n), self.nmax_lb + 1e-9)
+        k = min(3, len(f))
+        idx = np.argsort(f)[:k]
+        if k >= 2:
+            slope = np.polyfit(f[idx], n[idx], 1)[0]
+            slope = max(slope, 1e-18)
+        else:
+            slope = max(n[0]/max(f[0], 1e-18), 1e-18)
+        b0 = np.clip(slope / max(nmax0, 1e-18), self.b_bounds[0], self.b_bounds[1])
+
+        def resid(x):
+            return LangmuirEq.n_abs(f, x[0], x[1]) - n
+
+        lb = np.array([self.nmax_lb, self.b_bounds[0]], float)
+        ub = np.array([np.inf,        self.b_bounds[1]], float)
+        x0 = np.minimum(np.maximum(np.array([nmax0, b0], float), lb+1e-12), ub-1e-12)
+
+        res = least_squares(resid, x0, bounds=(lb, ub), loss='linear')
+        nmax, b = float(res.x[0]), float(res.x[1])
+        n_fit = LangmuirEq.n_abs(f, nmax, b)
+        rmse = float(np.sqrt(np.mean((n_fit - n)**2)))
+        KH = LangmuirEq.henry_from_params(nmax, b)
+        fhalf = LangmuirEq.f_half(b)
+        return nmax, b, KH, fhalf, rmse, f, n_fit
+
+    def fit(self, df: pd.DataFrame):
+        assert {'pressure','temperature','absolute'}.issubset(df.columns)
+        rows, preds = [], []
+        for T, g in df.sort_values(['temperature','pressure']).groupby('temperature'):
+            P = g['pressure'].to_numpy(float)
+            n = g['absolute'].to_numpy(float)
+            nmax, b, KH, fhalf, rmse, f, n_fit = self._fit_one_T(P, float(T), n)
+            rows.append(dict(temperature=float(T), nmax=nmax, b=b, KH=KH, f_half_Pa=fhalf, rmse=rmse))
+            preds.append(pd.DataFrame({'pressure':P, 'temperature':float(T), 'pred_absolute':n_fit}))
+        params_df = pd.DataFrame(rows).sort_values('temperature').reset_index(drop=True)
+        df_out = df.merge(pd.concat(preds, ignore_index=True), on=['pressure','temperature'], how='left')
+        return params_df, df_out
+
+# ========================== Polynomial T→parameter models ==========================
+
+class Poly1DModel:
+    """
+    y(T) ≈ poly_d( (T - mu)/sig ), optionally in log-space (for strictly positive y).
+    """
+    def __init__(self, degree=5, log_space=False):
+        self.degree = degree
+        self.log_space = log_space
+        self.mu = None
+        self.sig = None
+        self.coef = None  # highest power first (np.polyfit style)
+
+    def _tx(self, T):
+        T = np.asarray(T, float)
+        return (T - self.mu) / self.sig
+
+    def fit(self, T, y):
+        T = np.asarray(T, float)
+        y = np.asarray(y, float)
+        self.mu = float(np.mean(T))
+        self.sig = float(np.std(T) if np.std(T) > 0 else 1.0)
+        X = self._tx(T)
+        if self.log_space:
+            y = np.log(np.clip(y, 1e-300, None))
+        self.coef = np.polyfit(X, y, self.degree)
+        return self
+
+    def predict(self, T):
+        X = self._tx(T)
+        val = np.polyval(self.coef, X)
+        if self.log_space:
+            return np.exp(val)
+        return val
+
+    def as_dict(self, name):
+        return dict(name=name, degree=self.degree, log_space=self.log_space, mu=self.mu, sig=self.sig, coef=self.coef.tolist())
+
+# ======================= Global P–T isotherm from poly params ======================
+
+class PTIsothermPolyModel:
+    """
+    - Fit polynomials nmax(T), b(T) from per-T Langmuir fits.
+    - Predict absolute at any (P,T) using fugacity from PREoS.
+    - Predict out = rho_bulk(P,T) * Vp (Vp learned from data, identical to your snippet).
+    - Predict excess = absolute - out.
+    """
+    def __init__(self, eos: PREoS, degree_nmax=5, degree_b=5, log_b=False, Vp=None):
+        self.eos = eos
+        self.nmax_model = Poly1DModel(degree=degree_nmax, log_space=False)
+        self.b_model    = Poly1DModel(degree=degree_b,    log_space=log_b)
+        self.Vp = Vp  # m^3/g (or whatever matches your units)
+
+    # --- training from per-T results ---
+    def fit_from_params(self, params_df: pd.DataFrame):
+        T = params_df['temperature'].to_numpy(float)
+        self.nmax_model.fit(T, params_df['nmax'].to_numpy(float))
+        self.b_model.fit(T, params_df['b'].to_numpy(float))
+        return self
+
+    # --- identical OUT logic to your previous code ---
+    def set_Vp_from_df(self, df: pd.DataFrame):
+        P = df['pressure'].to_numpy(float)
+        T = df['temperature'].to_numpy(float)
+        if 'capacity_out' in df.columns:
+            y = df['capacity_out'].to_numpy(float)
+        else:
+            y = (df['absolute'].to_numpy(float) - df['excess'].to_numpy(float))
+        rho = self.eos.rho_bulk(P, T)                         # mol/m^3
+        self.Vp = float(np.dot(rho, y) / (np.dot(rho, rho) + 1e-18))  # m^3/g
+        if self.Vp < 0: self.Vp = 0.0
+        return self.Vp
+
+    # --- predictions ---
+    def _nmax_b_T(self, T):
+        T = np.atleast_1d(T).astype(float)
+        return self.nmax_model.predict(T), self.b_model.predict(T)
+
+    def predict_absolute(self, P, T):
+        P = np.atleast_1d(P).astype(float); T = np.atleast_1d(T).astype(float)
+        f = self.eos.fugacity(P, T)
+        nmax, b = self._nmax_b_T(T)
+        return nmax * (b*f) / (1.0 + b*f)
+
+    def predict_out(self, P, T):
+        assert self.Vp is not None, "Call set_Vp_from_df(...) first or pass Vp in ctor."
+        return self.eos.rho_bulk(P, T) * self.Vp
+
+    def predict_excess(self, P, T):
+        return self.predict_absolute(P, T) - self.predict_out(P, T)
+
+    # convenience
+    def add_predictions(self, df, prefix="pred_"):
+        P = df['pressure'].to_numpy(float)
+        T = df['temperature'].to_numpy(float)
+        out = df.copy()
+        out[f'{prefix}absolute'] = self.predict_absolute(P, T)
+        if self.Vp is not None:
+            out[f'{prefix}out'] = self.predict_out(P, T)
+            out[f'{prefix}excess'] = out[f'{prefix}absolute'] - out[f'{prefix}out']
+        return out
+
