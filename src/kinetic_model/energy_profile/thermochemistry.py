@@ -157,6 +157,96 @@ class HarmonicThermo(ThermoChem):
         F = U - temperature * S
         
         return F
+    
+
+class HA1DFRThermo(HarmonicThermo):
+    """Class for calculating thermodynamic properties in the approximation
+    that all degrees of freedom are treated harmonically, but one treated as 
+    1D free rotor. Often used for adsorbates.
+
+    Inputs:
+
+    vib_energies : list
+        a list of the harmonic energies of the adsorbate (e.g., from
+        ase.vibrations.Vibrations.get_energies). The number of
+        energies should match the number of degrees of freedom of the
+        adsorbate; i.e., 3*n, where n is the number of atoms. Note that
+        this class does not check that the user has supplied the correct
+        number of energies. Units of energies are eV.
+    potentialenergy : float
+        the potential energy in eV (e.g., from atoms.get_potential_energy)
+        (if potentialenergy is unspecified, then the methods of this
+        class can be interpreted as the energy corrections)
+    ignore_imag_modes : bool
+        If True, any imaginary frequencies will be ignored in the calculation
+        of the thermochemical properties. If False (default), an error will
+        be raised if any imaginary frequencies are present.
+    """
+
+    def __init__(self, atoms, axis_atoms_idx, rot_atoms_idx, vib_energies, potentialenergy=0., sigma = 1, ignore_imag_modes=True):
+        self.ignore_imag_modes = ignore_imag_modes
+        self.atoms = atoms
+        self.axis_atoms_idx = axis_atoms_idx
+        self.rot_atoms_idx = rot_atoms_idx
+        self.sigma = sigma
+
+        # Check for imaginary frequencies.
+        vib_energies, n_imag = _clean_vib_energies(
+            vib_energies, ignore_imag_modes=ignore_imag_modes
+        )
+        self.vib_energies = vib_energies
+        self.n_imag = n_imag
+
+        self.potentialenergy = potentialenergy
+
+    @staticmethod
+    def distance_atom_to_line(atoms, idx_1, idx_2, idx_3):
+        A = atoms[idx_1].position
+        B = atoms[idx_2].position
+        C = atoms[idx_3].position
+        AB = B - A
+        AC = C - A
+        cross = np.cross(AB, AC)
+        distance = np.linalg.norm(cross) / np.linalg.norm(AB)
+        return distance
+    
+    def calculate_free_rotor_thermo(self, temperature):
+        from ase.units import _amu, _k, kB, _hplanck
+        angstrom_to_m = 1e-10
+        # calculate moment of inertia in amu * angstrom ** 2 $I = \sum mr^2$ around atom indexed 0
+        I = 0
+        for idx in self.rot_atoms_idx:
+            atom = self.atoms[idx]
+            mr2 = atom.mass * self.distance_atom_to_line(self.atoms, self.axis_atoms_idx[0], self.axis_atoms_idx[1], idx) ** 2
+            I += mr2
+        # Convert to amu * m ** 2
+        I = I * _amu * angstrom_to_m ** 2
+
+        free_rotor_partition = (8 * np.pi ** 3 * I * _k * temperature) ** 0.5 / (self.sigma * _hplanck)
+
+        U = 0.5 * kB * temperature
+        S = kB * (np.log(free_rotor_partition) + 0.5)
+        G_freeRot = U - temperature * S
+        return U, S, G_freeRot
+    
+    def get_HA1DFR_internal_energy(self, temperature):
+        _, _, U_HA = self.get_internal_energy(temperature)
+        U_FR, S_FR, G_FR = self.calculate_free_rotor_thermo(temperature)
+        U = U_HA + U_FR
+        return U
+    
+    def get_HA1DFR_entropy(self, temperature):
+        S_HA = self.get_entropy(temperature)
+        U_FR, S_FR, G_FR = self.calculate_free_rotor_thermo(temperature)
+        S = S_HA + S_FR
+        return S
+    
+    def get_HA1DFR_helmholtz_energy(self, temperature):
+        G_HA = self.get_helmholtz_energy(temperature)
+        U_FR, S_FR, G_FR = self.calculate_free_rotor_thermo(temperature)
+        G = G_HA + G_FR
+        return G
+
 
 class IdealGasThermo(ThermoChem):
     """Class for calculating thermodynamic properties of a molecule

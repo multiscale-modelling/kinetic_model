@@ -8,7 +8,7 @@ from ase.units import kJ, kcal, eV, _Nav
 from kinetic_model.energy_profile.plotter import energy_bar, inter_connect, ts_curve
 
 # Apply general settings
-with open(os.path.abspath('../data/settings.yaml'), "r") as f:
+with open(os.path.abspath('./settings.yaml'), "r") as f:
             settings = yaml.safe_load(f)
 
 plt.rcParams.update({
@@ -386,7 +386,144 @@ class EnergyProfile:
             va='top'
         )
 
-    def show(self, ymin=None, ymax=None, padding=None,  legend=False):
+    def add_level_from_subset(self, subset, system, position, color, linewidth, alpha, label=None):
+        system_data = subset[subset['order'] == system]
+        self.levels[system] = position
+        if system_data.empty:
+            return
+        energy = system_data[self.energy_keyword].iloc[0] * self.unit_factor
+        x, y = energy_bar(position, energy)
+        self.ax.plot(x, y, label=label, color=color, alpha=alpha, linewidth=linewidth)
+
+    def add_connection_from_subset(self, subset, system1, system2, color, linewidth, alpha):
+        ts_names = [f"{system1}-{system2}", f"{system2}-{system1}"]
+        ts_energy = None
+        for ts in ts_names:
+            ts_data = subset[subset['order'] == ts]
+            if not ts_data.empty:
+                ts_energy = ts_data[self.energy_keyword].iloc[0] * self.unit_factor
+                break
+
+        e1 = subset[subset['order'] == system1][self.energy_keyword].iloc[0] * self.unit_factor
+        e2 = subset[subset['order'] == system2][self.energy_keyword].iloc[0] * self.unit_factor
+        p1 = self.levels[system1] + 1
+        p2 = self.levels[system2]
+
+        if ts_energy is not None:
+            x, y = ts_curve([p1, e1], [p2, e2], ts_energy)
+        else:
+            x, y = inter_connect(p1, p2, e1, e2)
+
+        self.ax.plot(x, y, color=color, linewidth=linewidth, alpha=alpha)
+
+    def add_intermediate_energy_label_from_subset(self, subset, system, position, fontsize=14):
+        energy = subset[subset['order'] == system][self.energy_keyword].iloc[0] * self.unit_factor
+        offset = 0.05 if self.energy_unit == "eV" else 2
+        self.ax.text(position + 0.5, energy + offset,
+                     f"{energy:.2f}", fontsize=fontsize, ha='center', va='bottom')
+
+    def add_ts_energy_label_from_subset(self, subset, system1, system2, fontsize=14):
+        ts_names = [f"{system1}-{system2}", f"{system2}-{system1}"]
+        for ts in ts_names:
+            ts_data = subset[subset['order'] == ts]
+            if not ts_data.empty:
+                ts_energy = ts_data[self.energy_keyword].iloc[0] * self.unit_factor
+                p1 = self.levels[system1] + 1
+                offset = 0.05 if self.energy_unit == "eV" else 2
+                self.ax.text(p1 + 0.5, ts_energy + offset,
+                             f"{ts_energy:.2f}", fontsize=fontsize, ha='center', va='bottom')
+                break
+    
+    def plot_pathway(self,
+                     model: str,
+                     pathway: str,
+                     systems: list[str],
+                     label: str = None,
+                     color: str = "#E69F00",
+                     add_energies: bool = False,
+                     add_names: bool = False,
+                     linewidth=6,
+                     alpha=1.0):
+        """
+        Plot one reaction sequence (systems) on the same axes.
+        
+        systems:    ordered list of 'order' keys, e.g. ['1','2','3']
+        label:      legend label for the first level (pass None to skip legend)
+        color:      color for levels & connections
+        add_energies: if True, draw intermediate TS & intermediate energy labels
+        add_names:    if True, draw structure names beneath each level
+        """
+        from collections import OrderedDict
+        subset = self.data[(self.data['model'] == model) & (self.data['pathway'] == pathway)]
+        if subset.empty:
+            raise ValueError(f"No data for model='{model}', pathway='{pathway}'")
+        
+        # initialize shared position map if needed
+        if not hasattr(self, 'position_map'):
+            self.position_map = OrderedDict()
+        
+        # assign x-positions (2*idx of first appearance)
+        for syss in systems:
+            for i, sys in enumerate(syss):
+                position = 2 * i
+                if sys not in self.position_map:
+                    self.position_map[sys] = position
+        
+        # draw levels
+        count = 0
+        for idx, syss in enumerate(systems):
+            for sys in syss:
+                pos = self.position_map[sys]
+                if count == 0 and label is not None:
+                    self.add_level_from_subset(subset=subset,
+                                            system=sys, 
+                                            position=pos, 
+                                            label=label, 
+                                            color=color, 
+                                            linewidth=linewidth,
+                                            alpha=alpha)
+                else:
+                    self.add_level_from_subset(subset=subset,
+                                            system=sys, 
+                                            position=pos, 
+                                            color=color, 
+                                            linewidth=linewidth,
+                                            alpha=alpha)
+                count += 1
+        
+            # draw connections + TS labels
+            for s1, s2 in zip(syss[:-1], syss[1:]):
+                self.add_connection_from_subset(subset=subset,
+                                                system1=s1, 
+                                                system2=s2, 
+                                                color=color,
+                                                linewidth=linewidth,
+                                                alpha=alpha)
+                # self.add_ts_energy_label_from_subset(subset=subset,
+                #                                      system1=s1, 
+                #                                      system2=s2)
+        
+        # optional energy labels
+        if add_energies:
+            for syss in systems:
+                for sys in syss:
+                    pos = self.position_map[sys]
+                    self.add_intermediate_energy_label_from_subset(subset=subset,
+                                                                system=sys,
+                                                                position=pos)
+                for s1, s2 in zip(syss[:-1], syss[1:]):
+                    self.add_ts_energy_label_from_subset(subset=subset,
+                                                        system1=s1, 
+                                                        system2=s2)
+            
+        # optional structure names
+        # if add_names:
+        #     for sys in systems:
+        #         pos = self.position_map[sys]
+        #         self.add_structure_name_from_subset(system=sys, position=pos)
+    
+
+    def show(self, xmin=None, xmax=None, ymin=None, ymax=None, padding=None,  legend=False, save_fig=False, outfile=None):
         """
         Display the completed figure.
         """
@@ -395,37 +532,17 @@ class EnergyProfile:
         
         if all(v is not None for v in (padding, ymin, ymax)):
             self.ax.set_ylim(ymin - padding, ymax + padding)
+
+        if all(v is not None for v in (xmin, xmax)):
+            self.ax.set_xlim(xmin, xmax)
         
         self.ax.set_xticklabels([])
         self.ax.grid(True, axis='y', linestyle='--')
         self.ax.relim()
         self.ax.autoscale_view()
+
+        if save_fig:
+            if outfile == None:
+                outfile = 'out.pdf'
+            plt.savefig(outfile, dpi=600)
         plt.show()
-
-
-class EnergyProfileAxis(EnergyProfile):
-    def __init__(self, data: pd.DataFrame, energy_type, energy_unit, ax, fig=None):
-        """
-        Initialize with a pandas DataFrame and a user-supplied matplotlib axis.
-        """
-        self.data = data
-        self.ax = ax
-        self.fig = fig if fig is not None else ax.figure
-        self.energy_type = energy_type
-        self.energy_unit = energy_unit
-        self.levels = {}
-
-        unit_conversion = {
-            'eV': 1,
-            'kJ/mol': 1 * eV / kJ * _Nav,
-            'kcal/mol': 1 * eV / kcal * _Nav
-        }
-
-        energyType2Keywords = {
-            'Electronic energy': 'rel_E_eV',
-            'Enthalpy': 'rel_H_eV',
-            'Gibbs free energy': 'rel_G_eV'
-        }
-
-        self.energy_keyword = energyType2Keywords[energy_type]
-        self.unit_factor = unit_conversion[energy_unit]

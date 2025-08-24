@@ -74,7 +74,81 @@
     but-1-ene: 0
     hex-1-ene: 0
     oct-1-ene: 0
-
+  TS_8-9:
+    ethylene: 3
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "9":
+    ethylene: 3
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "5p":
+    ethylene: 3
+    but-1-ene: 0
+    hex-1-ene: 1
+    oct-1-ene: 0
+  "6p":
+    ethylene: 2
+    but-1-ene: 0
+    hex-1-ene: 1
+    oct-1-ene: 0
+  TS_6p-1pp:
+    ethylene: 2
+    but-1-ene: 0
+    hex-1-ene: 1
+    oct-1-ene: 0
+  "1pp":
+    ethylene: 2
+    but-1-ene: 0
+    hex-1-ene: 1
+    oct-1-ene: 0
+  "10":
+    ethylene: 2
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  TS_10-11:
+    ethylene: 2
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "11":
+    ethylene: 2
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  TS_11-12:
+    ethylene: 2
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "12":
+    ethylene: 2
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "5pp":
+    ethylene: 2
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 1
+  "6pp":
+    ethylene: 1
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 1
+  TS_6pp-1ppp:
+    ethylene: 1
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 1
+  "1ppp":
+    ethylene: 1
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 1
 "5":
   "5":
     ethylene: 5
@@ -123,6 +197,66 @@
     oct-1-ene: 0
   "5p":
     ethylene: 3
+    but-1-ene: 1
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "7":
+    ethylene: 2
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  TS_7-8:
+    ethylene: 2
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "8":
+    ethylene: 2
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  TS_8-9:
+    ethylene: 2
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "9":
+    ethylene: 2
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "5pp":
+    ethylene: 2
+    but-1-ene: 1
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "10":
+    ethylene: 1
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  TS_10-11:
+    ethylene: 1
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "11":
+    ethylene: 1
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  TS_11-12:
+    ethylene: 1
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "12":
+    ethylene: 1
+    but-1-ene: 0
+    hex-1-ene: 0
+    oct-1-ene: 0
+  "5ppp":
+    ethylene: 1
     but-1-ene: 1
     hex-1-ene: 0
     oct-1-ene: 0

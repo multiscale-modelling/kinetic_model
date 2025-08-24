@@ -1,4 +1,4 @@
-from kinetic_model.energy_profile.thermochemistry import IdealGasThermo, HarmonicThermo
+from kinetic_model.energy_profile.thermochemistry import IdealGasThermo, HarmonicThermo, HA1DFRThermo
 from kinetic_model.energy_profile.utils import get_symmetry_number
 import numpy as np
 import pandas as pd
@@ -43,11 +43,17 @@ def parse_structure_data(base_dir: str, model_method='formate_PBED3BJ', pathway=
                 type = 'Intermediate'
                 _, order, name = system.split(sep='_')
             system_path = os.path.join(pathway_path, system)
+            poscar_file = os.path.join(system_path, 'POSCAR')
+            atoms = read(poscar_file)
             energy_file = os.path.join(system_path, 'energy.dat')
             freq_file = os.path.join(system_path, 'freq.txt')
+            rot_atoms_file = os.path.join(system_path, 'rotAtoms.yaml')
+            if_free_rotor = False
+            if os.path.exists(rot_atoms_file):
+                if_free_rotor = True
             if os.path.exists(energy_file) and os.path.exists(freq_file):
                 electronic_energy = float(np.loadtxt(energy_file))
-                if model == 'pbc':
+                if model in ['pbc', 'QM-QM']:
                     freqs = _read_freq_vasp(freq_file)
                 elif model in ['benzoate', 'nonRigidBenzoate', 'formate']:
                     freqs = _read_freq_orca(freq_file)
@@ -61,6 +67,9 @@ def parse_structure_data(base_dir: str, model_method='formate_PBED3BJ', pathway=
                     'type': type,
                     'electronic_energy': electronic_energy,
                     'freqs': freqs,
+                    'if_free_rotor': if_free_rotor,
+                    'rot_atoms_file': rot_atoms_file,
+                    'ase_atoms': atoms,
                 })
     return pd.DataFrame(data)
 
@@ -74,7 +83,11 @@ def parse_molecule_data(base_dir: str, structure_model='formate_PBED3BJ') -> pd.
         'pbc_PBED3BJ': 'pbc_PBED3BJ'
     }
     data = []
-    molecule_model = structure2molecule_model[structure_model]
+    if structure_model in structure2molecule_model.keys():
+        molecule_model = structure2molecule_model[structure_model]
+    else:
+        molecule_model = structure_model
+
     model, method = molecule_model.split(sep='_')
     model_path = os.path.join(base_dir, molecule_model)
     if os.path.isdir(model_path):
@@ -86,7 +99,7 @@ def parse_molecule_data(base_dir: str, structure_model='formate_PBED3BJ') -> pd.
             xyz_file = os.path.join(system_path, 'mol.xyz')
             if os.path.exists(energy_file) and os.path.exists(freq_file):
                 electronic_energy = float(np.loadtxt(energy_file))
-                if model in ['pbc', 'mixed']:
+                if model in ['pbc', 'mixed', 'QM-QM']:
                     freqs = _read_freq_vasp(freq_file)
                     atoms = read(poscar_file)
                 elif model == 'cluster':
@@ -116,7 +129,7 @@ def calculate_harmonic_thermodynamics(base_dir: str,
         for pressure in pressures:
             for _, row in df.iterrows():
                 num_vibs = len(row['freqs'])
-                if row['model'] == 'pbc':
+                if row['model'] in ['pbc', 'QM-QM']:
                     # Partial Hessian analysis was done in VASP
                     # no translational and rotational degrees of freedom
                     if row['type'] == 'TS':
@@ -143,17 +156,36 @@ def calculate_harmonic_thermodynamics(base_dir: str,
                 freqs = np.array(freqs)
                 vib_energies = freqs / 8065.54429
 
-                if row['model'] == 'pbc':
+                if row['model'] in ['pbc', 'QM-QM']:
                     electronic_energy = row['electronic_energy']
                 else:
                     electronic_energy = row['electronic_energy'] * 27.2114
-                    
-                ha = HarmonicThermo(
-                    vib_energies=vib_energies, 
-                    potentialenergy=electronic_energy,
+                
+                if row['if_free_rotor'] == True:
+                    atoms = row['ase_atoms']
+                    with open(row['rot_atoms_file'], 'r') as f:
+                        rot_atoms_data = yaml.safe_load(f)
+                    axis_atoms_idx = rot_atoms_data['rot_axis']
+                    rot_atoms_idx = rot_atoms_data['rot_atoms']
+
+                    ha1dfr = HA1DFRThermo(
+                        atoms = atoms,
+                        axis_atoms_idx=axis_atoms_idx,
+                        rot_atoms_idx=rot_atoms_idx,
+                        vib_energies=vib_energies,
+                        potentialenergy=electronic_energy,
+                        sigma=3,
                     )
-                _, _, enthalpy = ha.get_internal_energy(temp)
-                free_energy = ha.get_helmholtz_energy(temp)
+                    enthalpy = ha1dfr.get_HA1DFR_internal_energy(temp)
+                    free_energy = ha1dfr.get_HA1DFR_helmholtz_energy(temp)
+                else:
+                    ha = HarmonicThermo(
+                        vib_energies=vib_energies, 
+                        potentialenergy=electronic_energy,
+                        ignore_imag_modes = True,
+                        )
+                    _, _, enthalpy = ha.get_internal_energy(temp)
+                    free_energy = ha.get_helmholtz_energy(temp)
 
                 results.append({
                     'model': row['model'],
@@ -169,7 +201,6 @@ def calculate_harmonic_thermodynamics(base_dir: str,
                     'enthalpy_eV': enthalpy,
                     'free_energy_eV': free_energy,
                 })
-
     return pd.DataFrame(results)
 
 def calculate_ideal_gas_thermodynamics(base_dir: str, 
@@ -186,7 +217,7 @@ def calculate_ideal_gas_thermodynamics(base_dir: str,
                 freqs = np.array(row['freqs'])
                 vib_energies = freqs / 8065.54429
 
-                if row['model'] == 'pbc':
+                if row['model'] in ['pbc', 'QM-QM']:
                     electronic_energy = row['electronic_energy']
                 else:
                     electronic_energy = row['electronic_energy'] * 27.2114
@@ -228,6 +259,8 @@ def calculate_energy_with_references(row, molecule_results, formulas):
         if weight > 0:
             if row['model'] in ['formate', 'benzoate', 'nonRigidBenzoate']:
                 model = 'cluster'
+            elif row['model'] == 'QM-QM':
+                model = 'QM-QM'
             else:
                 model = 'pbc'
 
@@ -244,7 +277,6 @@ def calculate_energy_with_references(row, molecule_results, formulas):
                 
                 ref_energies['ref_H_eV'] += weight * molecule_row['enthalpy_eV']
                 ref_energies['ref_G_eV'] += weight * molecule_row['free_energy_eV']
-
     return ref_energies
 
 def calculate_energies_with_references(structures_dir: str, 
@@ -292,25 +324,38 @@ def calculate_energies_with_references(structures_dir: str,
 def calculate_relative_energies(structures_dir: str,
                                 molecules_dir: str,
                                 temperatures: list[float],
-                                model: str = 'formate_PBED3BJ',
-                                pathway: str = 'agostic',  
+                                models: list[str],
+                                pathways: list[str],  
                                 ref_struc: str = '1', 
                                 pressures: list[float] = [101325.],
                                 truhlar: bool = False, 
                                 shift_freq: float = 50., 
                                 real_freqs: bool =False) -> pd.DataFrame:
-    corrected_results = calculate_energies_with_references(
-        structures_dir=structures_dir,
-        molecules_dir=molecules_dir,
-        temperatures=temperatures,
-        model=model,
-        pathway=pathway,
-        ref_struc=ref_struc,
-        pressures=pressures,
-        truhlar=truhlar,
-        shift_freq=shift_freq,
-        real_freqs=real_freqs,
-    )
+    from itertools import product
+    all_results = []
+
+    for model, pathway in product(models, pathways):
+        try:
+            corrected = calculate_energies_with_references(
+                structures_dir=structures_dir,
+                molecules_dir=molecules_dir,
+                temperatures=temperatures,
+                model=model,
+                pathway=pathway,
+                ref_struc=ref_struc,
+                pressures=pressures,
+                truhlar=truhlar,
+                shift_freq=shift_freq,
+                real_freqs=real_freqs,
+            )
+            all_results.append(corrected)
+        except Exception as e:
+            print(f"Failed for model='{model}', pathway='{pathway}': {e}")
+    
+    if not all_results:
+        raise ValueError("No results were successfully computed.")
+        
+    corrected_results = pd.concat(all_results, ignore_index=True)
     
     # Group by relevant columns
     grouped = corrected_results.groupby(['model', 'method', 'pressure', 'temperature', 'pathway'])
