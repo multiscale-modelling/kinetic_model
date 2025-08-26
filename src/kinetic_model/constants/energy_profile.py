@@ -76,13 +76,13 @@ class EnergyBarriers:
             'deinsertion_CatCn_C2':      self.energy_profile['TS_2-3'] - self.energy_profile['Ni-butyl'],
 
             # 4) Recombination (CatCn(C2) ↔ Cat(C2)Cn)
-            'recombination_CatCn_C2':    self.energy_profile['TS_7-8'] - self.energy_profile['et-Ni-butyl'],
+            # 'recombination_CatCn_C2':    self.energy_profile['TS_7-8'] - self.energy_profile['et-Ni-butyl'],
             # 'derecombination_CatCn_C2':  self.energy_profile['TS_7-8'] - self.energy_profile['but-Ni-ethyl'],
             # 5) alternative c2cn adsorbtion throw recombination
-            # 'recombination_Cat_Cn_C2': self.energy_profile['H-Ni-et-but'] - self.energy_profile['H-Ni-but'],
-            # 'derecombination_Cat_Cn_C2': - (self.energy_profile['H-Ni-et-but'] - self.energy_profile['H-Ni-but']),
-            # 'coordination_Cat_Cn_C2': self.energy_profile['H-Ni-et-but'] - self.energy_profile['et-Ni-H'],
-            # 'decoordination_Cat_Cn_C2': - (self.energy_profile['H-Ni-et-but'] - self.energy_profile['et-Ni-H']),
+            'recombination_Cat_Cn_C2': self.energy_profile['et-Ni-but-H'] - self.energy_profile['H-Ni-but'],
+            'derecombination_Cat_Cn_C2': - (self.energy_profile['et-Ni-but-H'] - self.energy_profile['H-Ni-but']),
+            'coordination_Cat_Cn_C2': self.energy_profile['et-Ni-but-H'] - self.energy_profile['et-Ni-H'],
+            'decoordination_Cat_Cn_C2': - (self.energy_profile['et-Ni-but-H'] - self.energy_profile['et-Ni-H']),
         }
 
     def get_energy_profile(self) -> dict[str, float]:

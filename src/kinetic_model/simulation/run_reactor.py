@@ -9,6 +9,7 @@ from kinetic_model.simulation.reaction_list_creator import (
     make_reaction_list_basic,
     prepare_constants_basic,
     make_reaction_list_chemisorp,
+    make_reaction_list_chemisorp_recomb,
     prepare_constants_chemisorp,
 )
 from kinetic_model.core.diffusion import Reaction_Diffusion
@@ -178,7 +179,7 @@ class ReactorSimulationChemisorption(ReactorSimulation):
         self._diffusion_rates = self._calc_diffusion_constants(df, idx)
         self._capacity       = self._calc_capacity(df, idx)
 
-        consts = prepare_constants_chemisorp(
+        self.consts = prepare_constants_chemisorp(
             self.barrier_params,
             n_max=self.N,
             delta_ins=self.delta_ins,
@@ -187,9 +188,9 @@ class ReactorSimulationChemisorption(ReactorSimulation):
             diffusion_rates=self._diffusion_rates,
             temperature=self.T
         )
-        self._reactions = make_reaction_list_chemisorp(
+        self._reactions = make_reaction_list_chemisorp_recomb(
             n_max=self.N,
-            consts=consts,
+            consts=self.consts,
             diffusion_rates=self._diffusion_rates,
             include_diffusion=self.include_diffusion
         )
