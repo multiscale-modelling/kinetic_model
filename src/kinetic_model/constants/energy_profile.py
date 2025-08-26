@@ -11,58 +11,46 @@ class EnergyBarriers:
 
     def __init__(
         self,
-        structures_dir: str,
-        molecules_dir: str,
-        model: str,
-        pathway: str,
-        ref_struc: str,
         temperature: float,
         pressure: float,
-        custom_order: list[str],
-        energy_type: str = 'Gibbs free energy',
-        energy_unit: str = 'kJ/mol'
     ):
         # Store inputs
-        self.structures_dir = os.path.abspath(structures_dir)
-        self.molecules_dir = os.path.abspath(molecules_dir)
-        self.model = model
-        self.pathway = pathway
-        self.ref_struc = ref_struc
-        self.temperatures = [temperature]
-        self.pressures = [pressure * 101325.0]  # Convert bar to Pa
-        self.custom_order = custom_order
-        self.energy_type = energy_type
-        self.energy_unit = energy_unit
+        models = ['QM-QM_TPSSh-PBED3']   # Options: ['QM-QM_M06L-PBED3', 'QM-QM_TPPSh-PBED3]  
+        pathways = ['trigonal']         # Options: ['trigonal', 'hexagonal']
+        ref_struc = '1'                 # Choose either 1 or 5
+        energy_unit = 'kJ/mol'              # Options: ['eV', 'kJ/mol', 'kcal/mol']
+
+        custom_order = ["1", "2", "3", "4", "5", "5a", "6", "1p", "7", "8", "9", "5p", "6p", "1pp", "10", "11", "12", "5pp", "6pp", "1ppp", "2-3", "3-4", "6-1p", "7-8", "8-9", "6p-1pp", "10-11", "11-12", "6pp-1ppp"]  # Use for sorting the intermediates in a table (or pd.DataFrame)
 
         # Calculate relative energies
-        rel = calculate_relative_energies(
-            structures_dir=self.structures_dir,
-            molecules_dir=self.molecules_dir,
-            temperatures=self.temperatures,
-            model=self.model,
-            ref_struc=self.ref_struc,
-            pathway=self.pathway,
-            pressures=self.pressures
+        self.rel = calculate_relative_energies(
+            structures_dir=os.path.abspath('../data/structures'),
+            molecules_dir=os.path.abspath('../data/gas-phase-molecules'),
+            temperatures=[temperature],
+            models=models,
+            ref_struc=ref_struc,
+            pathways=pathways,
+            pressures=[pressure * 101325.0]  # Convert bar to Pa
         )
 
         # Filter and sort
-        filt = rel[rel['order'].isin(self.custom_order)].copy()
+        filt = self.rel[self.rel['order'].isin(custom_order)].copy()
         filt['order'] = pd.Categorical(
-            filt['order'], categories=self.custom_order, ordered=True
+            filt['order'], categories=custom_order, ordered=True
         )
         self._rel_filtered = filt.sort_values('order')
 
         # Build energy profile DataFrame
         df = self._rel_filtered.loc[:, ['system_name', 'rel_G_eV']].copy()
-        if self.energy_unit == 'kJ/mol':
+        if energy_unit == 'kJ/mol':
             df['rel_G'] = df['rel_G_eV'] * 96.485
-        elif self.energy_unit == 'kcal/mol':
+        elif energy_unit == 'kcal/mol':
             df['rel_G'] = df['rel_G_eV'] * 23.061
         else:
             df['rel_G'] = df['rel_G_eV']
         df = df.set_index('system_name')['rel_G']
         self.energy_profile = df.to_dict()
-
+        print(self.energy_profile)
         # Compute barriers
         self.energy_barriers = {
             # 1) Coordination at catalysis
@@ -74,8 +62,8 @@ class EnergyBarriers:
             'decoordination_CatC2_C2':  - self.energy_profile['et-Ni-ethyl'],
             'coordination_CatCn_C2':     self.energy_profile['et-Ni-butyl'] - self.energy_profile['Ni-butyl'],
             'decoordination_CatCn_C2':  - (self.energy_profile['et-Ni-butyl'] - self.energy_profile['Ni-butyl']),
-            'coordination_CatC2_Cn':     self.energy_profile['but-Ni-ethyl'] - self.energy_profile['Ni-ethyl'],
-            'decoordination_CatC2_Cn':  - (self.energy_profile['but-Ni-ethyl'] - self.energy_profile['Ni-ethyl']),
+            'coordination_CatC2_Cn':     self.energy_profile['et-Ni-but-H'] - self.energy_profile['Ni-ethyl'],
+            'decoordination_CatC2_Cn':  - (self.energy_profile['et-Ni-but-H'] - self.energy_profile['Ni-ethyl']),
 
             # 2) Chemisorption
             'chemisorption_Cat_C2':      self.energy_profile['TS_6-1p'] - self.energy_profile['et-Ni-H'],
@@ -89,12 +77,12 @@ class EnergyBarriers:
 
             # 4) Recombination (CatCn(C2) ↔ Cat(C2)Cn)
             'recombination_CatCn_C2':    self.energy_profile['TS_7-8'] - self.energy_profile['et-Ni-butyl'],
-            'derecombination_CatCn_C2':  self.energy_profile['TS_7-8'] - self.energy_profile['but-Ni-ethyl'],
+            # 'derecombination_CatCn_C2':  self.energy_profile['TS_7-8'] - self.energy_profile['but-Ni-ethyl'],
             # 5) alternative c2cn adsorbtion throw recombination
-            'recombination_Cat_Cn_C2': self.energy_profile['H-Ni-et-but'] - self.energy_profile['H-Ni-but'],
-            'derecombination_Cat_Cn_C2': - (self.energy_profile['H-Ni-et-but'] - self.energy_profile['H-Ni-but']),
-            'coordination_Cat_Cn_C2': self.energy_profile['H-Ni-et-but'] - self.energy_profile['et-Ni-H'],
-            'decoordination_Cat_Cn_C2': - (self.energy_profile['H-Ni-et-but'] - self.energy_profile['et-Ni-H']),
+            # 'recombination_Cat_Cn_C2': self.energy_profile['H-Ni-et-but'] - self.energy_profile['H-Ni-but'],
+            # 'derecombination_Cat_Cn_C2': - (self.energy_profile['H-Ni-et-but'] - self.energy_profile['H-Ni-but']),
+            # 'coordination_Cat_Cn_C2': self.energy_profile['H-Ni-et-but'] - self.energy_profile['et-Ni-H'],
+            # 'decoordination_Cat_Cn_C2': - (self.energy_profile['H-Ni-et-but'] - self.energy_profile['et-Ni-H']),
         }
 
     def get_energy_profile(self) -> dict[str, float]:

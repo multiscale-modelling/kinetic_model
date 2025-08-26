@@ -192,19 +192,19 @@ def make_reaction_list_chemisorp_recomb(
     for n = 2, 4, ..., n_max-2
     """
     reactions = make_reaction_list_chemisorp(n_max, consts, diffusion_rates, include_diffusion)
-    for n in range(2, n_max, 2):
+    # for n in range(2, n_max, 2):
         # Cat(Cn) + C2 <-> Cat(Cn)(C2)
-        reactions.append((
-            f"Cat(C{n}) + C2 <-> Cat(C{n})(C2)",
-            consts['k_coordination_Cat_Cn_C2'],
-            consts['k_decoordination_Cat_Cn_C2']
-        ))
+        # reactions.append((
+        #     f"Cat(C{n}) + C2 <-> Cat(C{n})(C2)",
+        #     consts['k_coordination_Cat_Cn_C2'],
+        #     consts['k_decoordination_Cat_Cn_C2']
+        # ))
         # Cat(Cn)(C2) <-> Cat(C2) + Cat(Cn)
-        reactions.append((
-            f"Cat(C{n})(C2) <-> Cat(C2) + Cat(C{n})",
-            consts['k_recombination_Cat_Cn_C2'],
-            consts['k_derecombination_Cat_Cn_C2']
-        ))
+        # reactions.append((
+        #     f"Cat(C{n})(C2) <-> Cat(C2) + Cat(C{n})",
+        #     consts['k_recombination_Cat_Cn_C2'],
+        #     consts['k_derecombination_Cat_Cn_C2']
+        # ))
     return reactions
 
 def prepare_constants_chemisorp_recomb(
@@ -233,16 +233,16 @@ def prepare_constants_chemisorp_recomb(
         temperature=temperature,
     )
     # Add the 4 extra constants for recombination steps
-    consts['k_coordination_Cat_Cn_C2'] = compute_rate(
-        barrier_params['coordination_Cat_Cn_C2'], T=temperature
-    )
-    consts['k_decoordination_Cat_Cn_C2'] = compute_rate(
-        barrier_params['decoordination_Cat_Cn_C2'], T=temperature
-    )
-    consts['k_recombination_Cat_Cn_C2'] = compute_rate(
-        barrier_params['recombination_Cat_Cn_C2'], T=temperature
-    )
-    consts['k_derecombination_Cat_Cn_C2'] = compute_rate(
-        barrier_params['derecombination_Cat_Cn_C2'], T=temperature
-    )
+    # consts['k_coordination_Cat_Cn_C2'] = compute_rate(
+    #     barrier_params['coordination_Cat_Cn_C2'], T=temperature
+    # )
+    # consts['k_decoordination_Cat_Cn_C2'] = compute_rate(
+    #     barrier_params['decoordination_Cat_Cn_C2'], T=temperature
+    # )
+    # consts['k_recombination_Cat_Cn_C2'] = compute_rate(
+    #     barrier_params['recombination_Cat_Cn_C2'], T=temperature
+    # )
+    # consts['k_derecombination_Cat_Cn_C2'] = compute_rate(
+    #     barrier_params['derecombination_Cat_Cn_C2'], T=temperature
+    # )
     return consts
