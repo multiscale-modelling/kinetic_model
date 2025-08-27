@@ -62,12 +62,12 @@ class EnergyBarriers:
             'decoordination_CatC2_C2':  - self.energy_profile['2'],
             'coordination_CatCn_C2':     self.energy_profile['7'] - self.energy_profile['3'],
             'decoordination_CatCn_C2':  - (self.energy_profile['7'] - self.energy_profile['3']),
-            'coordination_CatC2_Cn':     self.energy_profile['5a'] - self.energy_profile['1'],
-            'decoordination_CatC2_Cn':  - (self.energy_profile['5a'] - self.energy_profile['1']),
+            'coordination_CatC2_Cn':     self.energy_profile['5a'] - self.energy_profile['4'],
+            'decoordination_CatC2_Cn':  - (self.energy_profile['5a'] - self.energy_profile['4']),
 
             # 2) Chemisorption
             'chemisorption_Cat_C2':      self.energy_profile['6-1p'] - self.energy_profile['6'],
-            'dechemisorption_Cat_C2':    self.energy_profile['6-1p'] - self.energy_profile['1'],
+            'dechemisorption_Cat_C2':    self.energy_profile['6-1p'] - self.energy_profile['1p'],
             'chemisorption_Cat_Cn':      self.energy_profile['3-4'] - self.energy_profile['4'],
             'dechemisorption_Cat_Cn':    self.energy_profile['3-4'] - self.energy_profile['3'],
 
@@ -79,10 +79,10 @@ class EnergyBarriers:
             # 'recombination_CatCn_C2':    self.energy_profile['TS_7-8'] - self.energy_profile['7'],
             # 'derecombination_CatCn_C2':  self.energy_profile['TS_7-8'] - self.energy_profile['but-Ni-ethyl'],
             # 5) alternative c2cn adsorbtion throw recombination
-            'recombination_Cat_Cn_C2': self.energy_profile['5a'] - self.energy_profile['4'],
-            'derecombination_Cat_Cn_C2': - (self.energy_profile['5a'] - self.energy_profile['4']),
-            'coordination_Cat_Cn_C2': self.energy_profile['5a'] - self.energy_profile['6'],
-            'decoordination_Cat_Cn_C2': - (self.energy_profile['5a'] - self.energy_profile['6']),
+            'recombination_Cat_Cn_C2': self.energy_profile['5a'] - self.energy_profile['6'],
+            'derecombination_Cat_Cn_C2': - (self.energy_profile['5a'] - self.energy_profile['6']),
+            'coordination_Cat_Cn_C2': self.energy_profile['5a'] - self.energy_profile['4'],
+            'decoordination_Cat_Cn_C2': - (self.energy_profile['5a'] - self.energy_profile['4']),
         }
 
     def get_energy_profile(self) -> dict[str, float]:

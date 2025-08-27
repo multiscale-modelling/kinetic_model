@@ -157,7 +157,7 @@ def make_reaction_list_chemisorp(
 
     for n in range(4, n_max + 1, 2):
         reactions.append((f"CatC{n} + C2 <-> CatC{n}(C2)", consts[f'k_coordination_CatCn_C2'], consts['k_decoordination_CatCn_C2']))
-        reactions.append((f"CatC2 + C{n} <-> CatC2(C{n})", consts[f'k_coordination_CatC2_Cn'], consts['k_decoordination_CatC2_Cn']))
+        # reactions.append((f"CatC2 + C{n} <-> CatC2(C{n})", consts[f'k_coordination_CatC2_Cn'], consts['k_decoordination_CatC2_Cn'])) # do we need it? 
         reactions.append((f"Cat + C{n} <-> Cat(C{n})", consts[f'k_coordination_Cat_Cn'], consts['k_decoordination_Cat_Cn']))
     # 2) chemisorption
     reactions.append((f"Cat(C2) <-> CatC2", consts['k_chemisorption_Cat_C2'], consts['k_dechemisorption_Cat_C2']))
