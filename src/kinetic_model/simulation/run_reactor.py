@@ -11,6 +11,8 @@ from kinetic_model.simulation.reaction_list_creator import (
     make_reaction_list_chemisorp,
     make_reaction_list_chemisorp_recomb,
     prepare_constants_chemisorp,
+    make_reaction_list_chemisorp_simplified,
+    prepare_constants_chemisorp_simplified
 )
 from kinetic_model.core.diffusion import Reaction_Diffusion
 from kinetic_model.constants.energy_profile import EnergyPlaceholder
@@ -117,7 +119,7 @@ class ReactorSimulation:
             initial_concs_dict=self.initial_concs,
             time_points=times
         )
-        self._result.index = times
+        # self._result.index = times
         # final distribution
         dist = self._calc_distribution(self._result)
         # time-series probabilities
@@ -131,7 +133,7 @@ class ReactorSimulation:
 
         prob_ts = combined.div(combined.sum(axis=1), axis=0)
         
-        return dist, prob_ts
+        return dist, ts
 
 
 class ReactorSimulationChemisorption(ReactorSimulation):
@@ -197,3 +199,53 @@ class ReactorSimulationChemisorption(ReactorSimulation):
         return Reaction_Diffusion(reactions=self._reactions, capacity=self._capacity)
 
 
+
+class ReactorSimulationChemisorptionSimplified(ReactorSimulation):
+    """
+    Simplified chemisorption variant, inherits ReactorSimulation interface.
+    Uses simplified chemisorption barrier params and reaction list.
+    """
+    def __init__(
+        self,
+        N: int,
+        T: float, 
+        pressure: float,
+        L: float,
+        time_hours: float = 2.0,
+        n_steps: int = 10000,
+        initial_concs: dict = {'CatC2(C2)': 1e-2, 'C2': 1},
+        diff_model_path: str = '../data/processed/diffusion_model.pkl',
+        ads_model_path: str = '../data/processed/knn_adsorption_model.pkl',
+        energy_model: object = EnergyPlaceholder,
+        include_diffusion: bool = True
+    ):
+        super().__init__(
+            N, T, pressure, L,
+            None,
+            None,
+            time_hours,
+            n_steps,
+            initial_concs,
+            diff_model_path,
+            ads_model_path,
+            energy_model
+        )
+        self.include_diffusion = include_diffusion
+
+    def _build_solver(self):
+        df, idx = self._make_dataframe()
+        self._diffusion_rates = self._calc_diffusion_constants(df, idx)
+        self._capacity = self._calc_capacity(df, idx)
+
+        self.consts = prepare_constants_chemisorp_simplified(
+            self.barrier_params,
+            temperature=self.T
+        )
+        self._reactions = make_reaction_list_chemisorp_simplified(
+            n_max=self.N,
+            consts=self.consts,
+            diffusion_rates=self._diffusion_rates,
+            include_diffusion=self.include_diffusion
+
+        )
+        return Reaction_Diffusion(reactions=self._reactions, capacity=self._capacity)

@@ -1,5 +1,7 @@
 from scipy.integrate import odeint
+from scipy.integrate import solve_ivp
 import pandas as pd
+import numpy as np
 
 class Reaction:
     def __init__(self, reactions, fixed_concentrations=None) -> None:
@@ -88,7 +90,7 @@ class Reaction:
     def set_initial_concentrations(self, initial_concs_dict):
         return [initial_concs_dict.get(key, 0) for key in self.sorted_keys]
 
-    def solve(self, initial_concs_dict, time_points):
+    def solve_old(self, initial_concs_dict, time_points):
         # Getting sorted keys from the reaction dictionary
         if not hasattr(self, 'reaction_dict'):
             self.create_reaction_dict()
@@ -106,3 +108,33 @@ class Reaction:
         df.index = time_points
 
         return df
+
+    def solve(self, initial_concs_dict, time_points):
+        if not hasattr(self, 'reaction_dict'):
+            self.create_reaction_dict()
+
+        initial_concs = self.set_initial_concentrations(initial_concs_dict)
+
+        def wrapped_rhs(t, y):
+            return self.rate_of_change(y, t)
+
+        sol = solve_ivp(
+            fun=wrapped_rhs,
+            t_span=(time_points[0], time_points[-1]),
+            y0=initial_concs,
+            method='BDF',  # for stiff problems
+            t_eval=time_points,
+            vectorized=False,  # true only if rate_of_change is vectorized
+            rtol=1e-3,
+            atol=1e-6
+        )
+
+        if not sol.success:
+            print("⚠️ Solver failed:", sol.message)
+            # fall back to partial result
+            df = pd.DataFrame(sol.y.T, columns=self.sorted_keys, index=sol.t)
+        else:
+            df = pd.DataFrame(sol.y.T, columns=self.sorted_keys, index=time_points)
+
+        return df
+    

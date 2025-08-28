@@ -2,7 +2,7 @@
 import os
 import pandas as pd
 from kinetic_model.energy_profile.energy_processing import calculate_relative_energies
-
+import numpy as np
 
 class EnergyBarriers:
     """
@@ -98,7 +98,31 @@ class EnergyBarriers:
         return dict(self.energy_barriers)
 
 
+class EnergyBarriersSimplifyed(EnergyBarriers):
+    def __init__(self, temperature: float, pressure: float):
+        super().__init__(temperature, pressure)
+        # Override energy barriers with custom values
+        lowest_way = np.min([            self.energy_profile['5'],
+            self.energy_profile['5a'],
+            self.energy_profile['5']])
+        
+        highest_elimination_barrier = np.max([
+            lowest_way,
+            self.energy_profile['3-4'],
+            self.energy_profile['6-1p'],
+        ])
+        self.energy_barriers = {            # 3) Insertion of C2 into CatCn
+        'insertion':        self.energy_profile['2-3'] - self.energy_profile['2'],
+        'deinsertion':      self.energy_profile['2-3'] - self.energy_profile['7'],
+        'elimination':      highest_elimination_barrier - self.energy_profile['7'],
+        'deelimination':   highest_elimination_barrier - self.energy_profile['1p'] + \
+        (self.energy_profile['1'] - self.energy_profile['2'])
+        }
 
+
+
+
+        
 class EnergyPlaceholder:
     def __init__(self, pressure: float, temperature: float):
         # store inputs in case you extend this later

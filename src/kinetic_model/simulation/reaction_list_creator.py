@@ -246,3 +246,46 @@ def prepare_constants_chemisorp_recomb(
     #     barrier_params['derecombination_Cat_Cn_C2'], T=temperature
     # )
     return consts
+
+
+
+
+
+def make_reaction_list_chemisorp_simplified(
+    n_max: int,
+    consts: Dict[str, Tuple[float, float]],
+    diffusion_rates: Dict[int, float],
+    include_diffusion: bool = True
+) -> List[Tuple[str, float, float]]:
+    """
+    Turn the detailed constants dict into a full reaction list,
+    appending diffusion steps Cn <D> Cn_out if requested.
+    """
+    reactions: List[Tuple[str, float, float]] = []
+
+    # 2) insertion
+    for n in range(2, n_max, 2):
+        reactions.append((f"CatC{n}(C2) + C2 <-> CatC{n+2}(C2)", consts[f'k_insertion'], consts['k_deinsertion']))
+    
+    # 3) elimination
+    for n in range(4, n_max + 1, 2):
+        reactions.append((f"CatC{n}(C2) + C2 <-> CatC2(C2) + C{n}", consts[f'k_elimination'], consts['k_deelimination']))
+
+    # 4) diffusion in/out
+    if include_diffusion:
+        for n, rate in diffusion_rates.items():
+            reactions.append((f"C{n} <D> C{n}_out", rate, rate))
+
+    return reactions
+
+
+def prepare_constants_chemisorp_simplified(
+    barrier_params: Dict[str, Tuple[float, float]],
+    temperature: float = 300,
+) -> Dict[str, Tuple[float, float]]:
+    consts: Dict[str, Tuple[float, float]] = {}
+    
+    for key, val in barrier_params.items():
+        consts[f'k_{key}'] = compute_rate(val, T=temperature)
+        
+    return consts
