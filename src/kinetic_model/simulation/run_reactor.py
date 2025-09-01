@@ -66,7 +66,7 @@ class ReactorSimulation:
 
     def _calc_diffusion_constants(self, df, idx):
         dvals = self.diff_model.predict(df)  # m²/s
-        rates = dvals / (self.L * 1e-9)      # s⁻¹
+        rates = 15 * dvals / (self.L**2 * 1e-9)      # s⁻¹
         return {n: rates[i] for i, n in enumerate(idx)}
 
     def _calc_capacity(self, df, idx):
@@ -249,3 +249,5 @@ class ReactorSimulationChemisorptionSimplified(ReactorSimulation):
 
         )
         return Reaction_Diffusion(reactions=self._reactions, capacity=self._capacity)
+    
+

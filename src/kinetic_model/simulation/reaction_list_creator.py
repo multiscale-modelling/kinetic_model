@@ -248,9 +248,6 @@ def prepare_constants_chemisorp_recomb(
     return consts
 
 
-
-
-
 def make_reaction_list_chemisorp_simplified(
     n_max: int,
     consts: Dict[str, Tuple[float, float]],
@@ -264,12 +261,24 @@ def make_reaction_list_chemisorp_simplified(
     reactions: List[Tuple[str, float, float]] = []
 
     # 2) insertion
-    for n in range(2, n_max, 2):
-        reactions.append((f"CatC{n}(C2) + C2 <-> CatC{n+2}(C2)", consts[f'k_insertion'], consts['k_deinsertion']))
+    n = 2
+    reactions.append((f"CatC{n}(C2) + C2 <-> CatC{n+2}(C2)", consts[f'k_insertion_di'], consts['k_deinsertion_di']))
+    
+    n = 4
+    reactions.append((f"CatC{n}(C2) + C2 <-> CatC{n+2}(C2)", consts[f'k_insertion_tri'], consts['k_deinsertion_tri']))
+    
+    for n in range(6, n_max, 2):
+        reactions.append((f"CatC{n}(C2) + C2 <-> CatC{n+2}(C2)", consts[f'k_insertion_tetra'], consts['k_deinsertion_tetra']))
     
     # 3) elimination
-    for n in range(4, n_max + 1, 2):
-        reactions.append((f"CatC{n}(C2) + C2 <-> CatC2(C2) + C{n}", consts[f'k_elimination'], consts['k_deelimination']))
+    n = 2
+    reactions.append((f"CatC{n}(C2) + C2 <-> CatC2(C2) + C{n}", consts[f'k_elimination_di'], consts['k_deelimination_di']))
+    
+    n = 4
+    reactions.append((f"CatC{n}(C2) + C2 <-> CatC2(C2) + C{n}", consts[f'k_elimination_tri'], consts['k_deelimination_tri']))
+
+    for n in range(6, n_max + 1, 2):
+        reactions.append((f"CatC{n}(C2) + C2 <-> CatC2(C2) + C{n}", consts[f'k_elimination_tetra'], consts['k_deelimination_tetra']))
 
     # 4) diffusion in/out
     if include_diffusion:

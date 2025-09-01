@@ -130,11 +130,14 @@ class Reaction:
         )
 
         if not sol.success:
-            print("⚠️ Solver failed:", sol.message)
-            # fall back to partial result
-            df = pd.DataFrame(sol.y.T, columns=self.sorted_keys, index=sol.t)
+            # hard fail: make the error visible to the caller
+            raise RuntimeError(f"Solve failed: {sol.message}")
         else:
             df = pd.DataFrame(sol.y.T, columns=self.sorted_keys, index=time_points)
 
         return df
-    
+
+
+
+
+

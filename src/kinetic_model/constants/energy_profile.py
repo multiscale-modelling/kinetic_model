@@ -101,23 +101,93 @@ class EnergyBarriers:
 class EnergyBarriersSimplifyed(EnergyBarriers):
     def __init__(self, temperature: float, pressure: float):
         super().__init__(temperature, pressure)
+        
+        
+        ethylene_physisorption = self.energy_profile['5a'] - self.energy_profile['4']
+        self.energy_profile['5ap'] = self.energy_profile['9'] + ethylene_physisorption
+        self.energy_profile['5app'] = self.energy_profile['12'] + ethylene_physisorption
+        
         # Override energy barriers with custom values
-        lowest_way = np.min([            self.energy_profile['5'],
+        
+        ## Dimirization
+        lowest_way_di = np.min([
             self.energy_profile['5a'],
             self.energy_profile['5']])
         
-        highest_elimination_barrier = np.max([
-            lowest_way,
+        highest_elimination_barrier_di = np.max([
+            lowest_way_di,
             self.energy_profile['3-4'],
             self.energy_profile['6-1p'],
         ])
+        
         self.energy_barriers = {            # 3) Insertion of C2 into CatCn
-        'insertion':        self.energy_profile['2-3'] - self.energy_profile['2'],
-        'deinsertion':      self.energy_profile['2-3'] - self.energy_profile['7'],
-        'elimination':      highest_elimination_barrier - self.energy_profile['7'],
-        'deelimination':   highest_elimination_barrier - self.energy_profile['1p'] + \
+        'insertion_di':        self.energy_profile['2-3'] - self.energy_profile['2'],
+        'deinsertion_di':      self.energy_profile['2-3'] - self.energy_profile['7'],
+        'elimination_di':      highest_elimination_barrier_di - self.energy_profile['7'],
+        'deelimination_di':   highest_elimination_barrier_di - self.energy_profile['1p'] + \
         (self.energy_profile['1'] - self.energy_profile['2'])
         }
+
+        ## Trimirization
+        lowest_way_tri = np.min([
+            self.energy_profile['5ap'],
+            self.energy_profile['5p']])
+        
+        highest_elimination_barrier_tri = np.max([
+            lowest_way_tri,
+            self.energy_profile['8-9'],
+            self.energy_profile['6p-1pp'],
+        ])
+        
+        
+        self.energy_barriers = self.energy_barriers | {            # 3) Insertion of C2 into CatCn
+        'insertion_tri':        self.energy_profile['7-8'] - self.energy_profile['7'],
+        'deinsertion_tri':      self.energy_profile['7-8'] - self.energy_profile['10'],
+        'elimination_tri':      highest_elimination_barrier_tri - self.energy_profile['10'],
+        'deelimination_tri':   highest_elimination_barrier_tri - self.energy_profile['1pp'] + \
+        (self.energy_profile['3'] - self.energy_profile['7'])
+        }
+
+
+        ## Tetramerization
+        lowest_way_tetra = np.min([
+            self.energy_profile['5app'],
+            self.energy_profile['5pp']])
+        
+        highest_elimination_barrier_tetra = np.max([
+            lowest_way_tetra,
+            self.energy_profile['11-12'],
+            self.energy_profile['6pp-1ppp'],
+        ])
+        
+        
+        self.energy_barriers = self.energy_barriers | {            # 3) Insertion of C2 into CatCn
+        'insertion_tetra':        self.energy_profile['10-11'] - self.energy_profile['10'],
+        'deinsertion_tetra':      self.energy_barriers['deinsertion_tri'],
+        'elimination_tetra':      self.energy_barriers['elimination_tri'],
+        'deelimination_tetra':   highest_elimination_barrier_tetra - self.energy_profile['1ppp'] + \
+        (self.energy_profile['8'] - self.energy_profile['10'])
+        }
+        
+        for key, value in self.energy_barriers.items():
+            self.energy_barriers[key] = float(value)
+
+        # Store which step has highest elimination barrier for each process
+        self.way = {
+            'di': ('6-1p' if np.isclose(self.energy_profile['6-1p'], highest_elimination_barrier_di) else 
+               '3-4' if np.isclose(self.energy_profile['3-4'], highest_elimination_barrier_di) else
+               '5a' if np.isclose(self.energy_profile['5a'], highest_elimination_barrier_di) else '5'),
+               
+            'tri': ('8-9' if np.isclose(self.energy_profile['8-9'], highest_elimination_barrier_tri) else
+                '6p-1pp' if np.isclose(self.energy_profile['6p-1pp'], highest_elimination_barrier_tri) else
+                '5ap' if np.isclose(self.energy_profile['5ap'], highest_elimination_barrier_tri) else '5p'),
+                
+            'tetra': ('11-12' if np.isclose(self.energy_profile['11-12'], highest_elimination_barrier_tetra) else
+                  '6pp-1ppp' if np.isclose(self.energy_profile['6pp-1ppp'], highest_elimination_barrier_tetra) else 
+                  '5app' if np.isclose(self.energy_profile['5app'], highest_elimination_barrier_tetra) else '5pp')
+        }
+        
+
 
 
 
