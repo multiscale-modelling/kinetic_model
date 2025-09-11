@@ -125,8 +125,8 @@ class Reaction:
             method='BDF',  # for stiff problems
             t_eval=time_points,
             vectorized=False,  # true only if rate_of_change is vectorized
-            rtol=1e-3,
-            atol=1e-6
+            rtol=1e-6,
+            atol=1e-9
         )
 
         if not sol.success:

@@ -112,10 +112,11 @@ class ReactorSimulation:
         dfm.loc[dfm['n'] == 2, 'probability'] = np.nan
         return dfm
 
-    def run(self):
-        solver = self._build_solver()
+    def run(self, build_solver: bool = True):
+        if build_solver:
+            self.solver = self._build_solver()
         times  = np.linspace(0, self.time_hours * 3600, self.n_steps)
-        self._result = solver.solve(
+        self._result = self.solver.solve(
             initial_concs_dict=self.initial_concs,
             time_points=times
         )

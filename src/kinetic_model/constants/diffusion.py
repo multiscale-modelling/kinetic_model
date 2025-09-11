@@ -98,7 +98,7 @@ class DiffusionLinearExtrapPlaceHolder(DiffusionLinear):
             # n > 10: extrapolate using models at 6, 8, 10
             Mx = self._mass_calc(n)
             scaled_vals = []
-            for base_n in (6, 8, 10):
+            for base_n in (8, 10):
                 model = self.models.get(base_n)
                 if model is None:
                     continue
@@ -107,7 +107,7 @@ class DiffusionLinearExtrapPlaceHolder(DiffusionLinear):
                 y_norm = model.predict(Xs)[0]
                 D_base = y_norm * np.sqrt(T)
                 Mn = self._mass_calc(base_n)
-                scaled_vals.append(D_base * np.sqrt(Mx / Mn))
+                scaled_vals.append(D_base * np.sqrt(Mn / Mx))
 
             if scaled_vals:
                 preds[i] = float(np.mean(scaled_vals))
