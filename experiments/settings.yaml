@@ -1,0 +1,18 @@
+### Plotting settings ###
+linewidth: 6
+fontsize: 24
+fig_width: 20.4
+fig_height: 10.2
+fig_format: pdf
+dpi: 600
+color_palette:  # Okabe-Ito pallette: color-blind friendly
+  - "#000000"
+  - "#E69F00"
+  - "#56B4E9"
+  - "#009E73"
+  - "#F0E442"
+  - "#0072B2"
+  - "#D55E00"
+  - "#CC79A7"
+
+
