@@ -122,11 +122,11 @@ class Reaction:
             fun=wrapped_rhs,
             t_span=(time_points[0], time_points[-1]),
             y0=initial_concs,
-            method='BDF',  # for stiff problems
+            method='LSODA',  # for adaptive stiff problems
             t_eval=time_points,
             vectorized=False,  # true only if rate_of_change is vectorized
-            rtol=1e-6,
-            atol=1e-9
+            rtol=1e-5,
+            atol=1e-8
         )
 
         if not sol.success:

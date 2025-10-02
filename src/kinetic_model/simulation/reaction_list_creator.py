@@ -270,9 +270,9 @@ def make_reaction_list_chemisorp_simplified(
     for n in range(6, n_max, 2):
         reactions.append((f"CatC{n}(C2) + C2 <-> CatC{n+2}(C2)", consts[f'k_insertion_tetra'], consts['k_deinsertion_tetra']))
     
-    # 3) elimination
-    n = 2
-    reactions.append((f"CatC{n}(C2) + C2 <-> CatC2(C2) + C{n}", consts[f'k_elimination_di'], consts['k_deelimination_di']))
+    # # 3) elimination
+    # n = 2
+    # reactions.append((f"CatC{n}(C2) + C2 <-> CatC2(C2) + C{n}", consts[f'k_elimination_di'], consts['k_deelimination_di']))
     
     n = 4
     reactions.append((f"CatC{n}(C2) + C2 <-> CatC2(C2) + C{n}", consts[f'k_elimination_tri'], consts['k_deelimination_tri']))

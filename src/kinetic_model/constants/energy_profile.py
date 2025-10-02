@@ -145,7 +145,7 @@ class EnergyBarriersSimplifyed(EnergyBarriers):
         'deinsertion_tri':      self.energy_profile['7-8'] - self.energy_profile['10'],
         'elimination_tri':      highest_elimination_barrier_tri - self.energy_profile['10'],
         'deelimination_tri':   highest_elimination_barrier_tri - self.energy_profile['1pp'] + \
-        (self.energy_profile['3'] - self.energy_profile['7'])
+        (self.energy_profile['1'] - self.energy_profile['2'])#(self.energy_profile['3'] - self.energy_profile['7'])
         }
 
 
@@ -163,10 +163,12 @@ class EnergyBarriersSimplifyed(EnergyBarriers):
         
         self.energy_barriers = self.energy_barriers | {            # 3) Insertion of C2 into CatCn
         'insertion_tetra':        self.energy_profile['10-11'] - self.energy_profile['10'],
-        'deinsertion_tetra':      self.energy_barriers['deinsertion_tri'],
-        'elimination_tetra':      self.energy_barriers['elimination_tri'],
+        'deinsertion_tetra':      self.energy_profile['10-11'] - self.energy_profile['11']
+                                + (-self.energy_profile['10'] + self.energy_profile['8']),#self.energy_barriers['deinsertion_tri'],
+        'elimination_tetra':      highest_elimination_barrier_tetra - self.energy_profile['11'] \
+            + (-self.energy_profile['10'] + self.energy_profile['8']),#self.energy_barriers['elimination_tri'],
         'deelimination_tetra':   highest_elimination_barrier_tetra - self.energy_profile['1ppp'] + \
-        (self.energy_profile['8'] - self.energy_profile['10'])
+        (self.energy_profile['1'] - self.energy_profile['2'])#(self.energy_profile['8'] - self.energy_profile['10'])
         }
         
         for key, value in self.energy_barriers.items():
