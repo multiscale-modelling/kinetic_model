@@ -127,12 +127,12 @@ class ReactorSimulation:
         olefin_cols = [c for c in self._result.columns if re.match(r'C\d+(_out)?$', c)]
         ts = self._result[olefin_cols]
         # new:
-        combined = ts.T \
-                    .groupby(lambda col: int(re.search(r'(\d+)', col).group(1))) \
-                    .sum() \
-                    .T
+        # combined = ts.T \
+        #             .groupby(lambda col: int(re.search(r'(\d+)', col).group(1))) \
+        #             .sum() \
+        #             .T
 
-        prob_ts = combined.div(combined.sum(axis=1), axis=0)
+        #prob_ts = combined.div(combined.sum(axis=1), axis=0)
         
         return dist, ts
 
