@@ -41,7 +41,7 @@ class ReactorSimulation:
         self.N = N
         self.T = T
         self.pressure = pressure
-        self.L = L
+        self.L = L * 1e-9 / 2  # nm to m and diameter to radius
         self.delta_ins = delta_ins
         self.delta_ads = delta_ads
         self.time_hours = time_hours
@@ -66,7 +66,7 @@ class ReactorSimulation:
 
     def _calc_diffusion_constants(self, df, idx):
         dvals = self.diff_model.predict(df)  # m²/s
-        rates = 15 * dvals / (self.L**2 * 1e-9)      # s⁻¹
+        rates = 15 * dvals / (self.L**2)      # s⁻¹
         return {n: rates[i] for i, n in enumerate(idx)}
 
     def _calc_capacity(self, df, idx):
