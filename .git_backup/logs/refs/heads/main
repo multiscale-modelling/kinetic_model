@@ -1,0 +1,25 @@
+0000000000000000000000000000000000000000 90a7b93876d0f237fb18f577437c299dd429b6a3 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1746534942 +0200	commit (initial): initial project import
+90a7b93876d0f237fb18f577437c299dd429b6a3 90a7b93876d0f237fb18f577437c299dd429b6a3 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1746534955 +0200	Branch: renamed refs/heads/master to refs/heads/main
+90a7b93876d0f237fb18f577437c299dd429b6a3 b164d9d9a457091857e7664ab5b29311b36bf2c8 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1746535513 +0200	pull --rebase origin main (finish): refs/heads/main onto 1bddf094bd09a7be0e4bfc0c07c44b7f73d1548d
+b164d9d9a457091857e7664ab5b29311b36bf2c8 0ca126baa903e1b10a44ab837c986447a0f6dd7f aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1746537860 +0200	commit: added diffusion analysis
+0ca126baa903e1b10a44ab837c986447a0f6dd7f 2688bea5843343923755760f4dcd21c11d73a375 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1746720928 +0200	commit: added KNN prediction for adsorbtion
+2688bea5843343923755760f4dcd21c11d73a375 9022932ee5fe479fa083e34e826223f49b5c9f8f aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747039792 +0200	commit: I have made adsorbtion process ml notebook where I have done KNN model for adsorbtion prediction
+9022932ee5fe479fa083e34e826223f49b5c9f8f 219801be64cc7defa78fb558a696d812f37c4e26 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747388599 +0200	commit: added diffusion ml prediction
+219801be64cc7defa78fb558a696d812f37c4e26 c46194cf5106ec5d6c1bca3ad52d75d2ac7480d4 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747402564 +0200	commit: added whole case and fixed linear reaction constants
+c46194cf5106ec5d6c1bca3ad52d75d2ac7480d4 92b00170866eb8f6563cb69cc95e414cc06c534f aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747639075 +0200	commit: fixed diffusion model and changed plot in adsorption model
+92b00170866eb8f6563cb69cc95e414cc06c534f 9cacf40c94a4158637b2adec7716ff3ab12912ca aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747646687 +0200	commit: Tests and reactor run
+9cacf40c94a4158637b2adec7716ff3ab12912ca d5beeb5d91db0cdaacaf9cfc159b2eb33636aa29 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747674188 +0200	commit: last basic model
+d5beeb5d91db0cdaacaf9cfc159b2eb33636aa29 9bba08bfa53f919c025919a9f105e4679bfa7845 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747813797 +0200	merge chemisorption: Fast-forward
+9bba08bfa53f919c025919a9f105e4679bfa7845 a83354e8c100fdd28558fc24356c2f72cb4df4bb aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747815548 +0200	commit: fixed issue with time in time series
+a83354e8c100fdd28558fc24356c2f72cb4df4bb 9735ba42322bea66899f957e9c09d87b05264473 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747829746 +0200	commit: Extended ads prediction for CnH2n > 10
+9735ba42322bea66899f957e9c09d87b05264473 5402ccd9c6b8ceb80e931427c98cdd8e2d089a60 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747832869 +0200	commit: extrapolated diffusion (not very nice working) and ads models
+5402ccd9c6b8ceb80e931427c98cdd8e2d089a60 b5d1167a40416d904e14d041c083bc71c09fffea aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747911978 +0200	commit: git ingore is added
+b5d1167a40416d904e14d041c083bc71c09fffea 03fb6e36eca62de708f3b223d4d9a26d35c36f72 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747921146 +0200	commit: I have added plotting of energy profile
+03fb6e36eca62de708f3b223d4d9a26d35c36f72 c17f3bfa7ab4d92f039d61ff89866390644273ac aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747995680 +0200	commit: updated diffusion dataset
+c17f3bfa7ab4d92f039d61ff89866390644273ac ebc023f93ba7882d5089b583d3f2bbe4cd5beb1d aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1750420203 +0200	commit: Nams code is implemented to the project only not to reactor sim
+ebc023f93ba7882d5089b583d3f2bbe4cd5beb1d bafa85ac7156a7d8af45a5dd58b093d5b1a3f9cb aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1750681790 +0200	commit: added modified chem path but old examples may be broken
+bafa85ac7156a7d8af45a5dd58b093d5b1a3f9cb 86f4a1bef06a98bc90b35005e3cb27b1bd4f8bad aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1750772242 +0200	commit: updated examples
+86f4a1bef06a98bc90b35005e3cb27b1bd4f8bad 899730022d700fdeed34d694e07e934501f014ea aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1752655079 +0200	commit: new examples
+899730022d700fdeed34d694e07e934501f014ea b8bbe0df22421cf4d46844030dbae45413b2a65c aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1753272489 +0200	commit: added GP for adsorption prediction now it is ansemble knn + gp
+b8bbe0df22421cf4d46844030dbae45413b2a65c f40ff981cec92b5ad60b07453cc283a7f5d4c851 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1754898779 +0200	commit: add C2H4 isotherm ml
+f40ff981cec92b5ad60b07453cc283a7f5d4c851 b68c8ffdc5abe4d90b4586f350e313b57e231fe1 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756022600 +0200	commit: minor changes

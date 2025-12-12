@@ -1,0 +1,17 @@
+0000000000000000000000000000000000000000 b68c8ffdc5abe4d90b4586f350e313b57e231fe1 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756022660 +0200	branch: Created from main
+b68c8ffdc5abe4d90b4586f350e313b57e231fe1 6583787b1fc7920482d9bcff6b31a5ddb6a68c3e aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756024402 +0200	commit: new energy profile but constants are not working for now
+6583787b1fc7920482d9bcff6b31a5ddb6a68c3e 212d4b8d12ce73b9fdec5672bd7551ffd804329d aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756212461 +0200	commit: updated constants
+212d4b8d12ce73b9fdec5672bd7551ffd804329d e1b85f2c9b9a4eb81b46352c3494c2a7dfb74df5 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756222343 +0200	commit: fix reaction list but not constants
+e1b85f2c9b9a4eb81b46352c3494c2a7dfb74df5 d111e6ea04d962afe865d5370245a6728d7fc227 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756286233 +0200	commit: fix but not checked energies and constants
+d111e6ea04d962afe865d5370245a6728d7fc227 d0d02ce04ba1ab9637f31ea8fa9621e1dad72fd5 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756296382 +0200	commit: new energies and they looks correct for dimerization
+d0d02ce04ba1ab9637f31ea8fa9621e1dad72fd5 45cd642a51248a3fff65dcd1255b33f0de5f8ba8 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756397151 +0200	commit: fixed rates new simplified
+45cd642a51248a3fff65dcd1255b33f0de5f8ba8 88be1e25421b64bbb2a3f7dfd3c5fb2570240751 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756725987 +0200	commit: fix energies simpl
+88be1e25421b64bbb2a3f7dfd3c5fb2570240751 306856f130bc44c404dbfca35e5bef02db28740e Aleksandr <hydrazine114@gmail.com> 1757594823 +0200	commit: fix diffusion
+306856f130bc44c404dbfca35e5bef02db28740e dffaebdc312d014370ecffcb6a61e5c13bd9d010 Aleksandr <hydrazine114@gmail.com> 1758044324 +0200	commit: added experiments notebooks
+dffaebdc312d014370ecffcb6a61e5c13bd9d010 3347ab483910b043745a07ea6273fae7a0a54770 Aleksandr <hydrazine114@gmail.com> 1758638211 +0200	commit: test
+3347ab483910b043745a07ea6273fae7a0a54770 05777a93f4ff91d4141976b90c3024f8a325a258 Aleksandr <hydrazine114@gmail.com> 1758640487 +0200	commit: update
+05777a93f4ff91d4141976b90c3024f8a325a258 78eade4851a706f38677df42e0ce6d21dfc4f354 Aleksandr <hydrazine114@gmail.com> 1758712736 +0200	commit: test
+78eade4851a706f38677df42e0ce6d21dfc4f354 e2e103e67401b9e9aae05c0f240a9ee332d184fb Aleksandr <hydrazine114@gmail.com> 1759411100 +0200	commit: improved rates but a bit
+e2e103e67401b9e9aae05c0f240a9ee332d184fb 9d37b266eceb1e6797995b4ad3bdd9a89f547e84 Aleksandr <hydrazine114@gmail.com> 1759676612 +0200	commit: start fixing soft overview
+9d37b266eceb1e6797995b4ad3bdd9a89f547e84 c110541bb88f76f61b8f045b2720143c65027005 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1760444231 +0200	commit: minor changes
+c110541bb88f76f61b8f045b2720143c65027005 0246da28bce6b15c958e1879a38621e7f63be436 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1760960175 +0200	commit: fixed diffusion

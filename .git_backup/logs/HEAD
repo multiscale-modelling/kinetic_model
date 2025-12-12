@@ -1,0 +1,56 @@
+0000000000000000000000000000000000000000 90a7b93876d0f237fb18f577437c299dd429b6a3 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1746534942 +0200	commit (initial): initial project import
+90a7b93876d0f237fb18f577437c299dd429b6a3 0000000000000000000000000000000000000000 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1746534955 +0200	Branch: renamed refs/heads/master to refs/heads/main
+0000000000000000000000000000000000000000 90a7b93876d0f237fb18f577437c299dd429b6a3 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1746534955 +0200	Branch: renamed refs/heads/master to refs/heads/main
+90a7b93876d0f237fb18f577437c299dd429b6a3 1bddf094bd09a7be0e4bfc0c07c44b7f73d1548d aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1746535513 +0200	pull --rebase origin main (start): checkout 1bddf094bd09a7be0e4bfc0c07c44b7f73d1548d
+1bddf094bd09a7be0e4bfc0c07c44b7f73d1548d b164d9d9a457091857e7664ab5b29311b36bf2c8 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1746535513 +0200	pull --rebase origin main (pick): initial project import
+b164d9d9a457091857e7664ab5b29311b36bf2c8 b164d9d9a457091857e7664ab5b29311b36bf2c8 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1746535513 +0200	pull --rebase origin main (finish): returning to refs/heads/main
+b164d9d9a457091857e7664ab5b29311b36bf2c8 0ca126baa903e1b10a44ab837c986447a0f6dd7f aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1746537860 +0200	commit: added diffusion analysis
+0ca126baa903e1b10a44ab837c986447a0f6dd7f 2688bea5843343923755760f4dcd21c11d73a375 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1746720928 +0200	commit: added KNN prediction for adsorbtion
+2688bea5843343923755760f4dcd21c11d73a375 9022932ee5fe479fa083e34e826223f49b5c9f8f aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747039792 +0200	commit: I have made adsorbtion process ml notebook where I have done KNN model for adsorbtion prediction
+9022932ee5fe479fa083e34e826223f49b5c9f8f 219801be64cc7defa78fb558a696d812f37c4e26 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747388599 +0200	commit: added diffusion ml prediction
+219801be64cc7defa78fb558a696d812f37c4e26 c46194cf5106ec5d6c1bca3ad52d75d2ac7480d4 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747402564 +0200	commit: added whole case and fixed linear reaction constants
+c46194cf5106ec5d6c1bca3ad52d75d2ac7480d4 92b00170866eb8f6563cb69cc95e414cc06c534f aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747639075 +0200	commit: fixed diffusion model and changed plot in adsorption model
+92b00170866eb8f6563cb69cc95e414cc06c534f 9cacf40c94a4158637b2adec7716ff3ab12912ca aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747646687 +0200	commit: Tests and reactor run
+9cacf40c94a4158637b2adec7716ff3ab12912ca d5beeb5d91db0cdaacaf9cfc159b2eb33636aa29 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747674188 +0200	commit: last basic model
+d5beeb5d91db0cdaacaf9cfc159b2eb33636aa29 d5beeb5d91db0cdaacaf9cfc159b2eb33636aa29 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747674270 +0200	checkout: moving from main to chemisorption
+d5beeb5d91db0cdaacaf9cfc159b2eb33636aa29 eb7debd224c6cf9e58bbe0b5f6afcd78000fcb56 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747682783 +0200	commit: for now it works
+eb7debd224c6cf9e58bbe0b5f6afcd78000fcb56 9d87b2668d6d77f9b9d254238130e580204143c8 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747687015 +0200	commit: chem sorb list creator
+9d87b2668d6d77f9b9d254238130e580204143c8 1dd934b7ad841b7dcdd23c6db10d70d5d2a7280c aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747688750 +0200	commit: made reactor simulation chemsorb shitty but made it
+1dd934b7ad841b7dcdd23c6db10d70d5d2a7280c 9bba08bfa53f919c025919a9f105e4679bfa7845 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747813685 +0200	commit: fixed git push
+9bba08bfa53f919c025919a9f105e4679bfa7845 d5beeb5d91db0cdaacaf9cfc159b2eb33636aa29 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747813779 +0200	checkout: moving from chemisorption to main
+d5beeb5d91db0cdaacaf9cfc159b2eb33636aa29 9bba08bfa53f919c025919a9f105e4679bfa7845 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747813797 +0200	merge chemisorption: Fast-forward
+9bba08bfa53f919c025919a9f105e4679bfa7845 a83354e8c100fdd28558fc24356c2f72cb4df4bb aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747815548 +0200	commit: fixed issue with time in time series
+a83354e8c100fdd28558fc24356c2f72cb4df4bb 9735ba42322bea66899f957e9c09d87b05264473 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747829746 +0200	commit: Extended ads prediction for CnH2n > 10
+9735ba42322bea66899f957e9c09d87b05264473 5402ccd9c6b8ceb80e931427c98cdd8e2d089a60 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747832869 +0200	commit: extrapolated diffusion (not very nice working) and ads models
+5402ccd9c6b8ceb80e931427c98cdd8e2d089a60 b5d1167a40416d904e14d041c083bc71c09fffea aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747911978 +0200	commit: git ingore is added
+b5d1167a40416d904e14d041c083bc71c09fffea 03fb6e36eca62de708f3b223d4d9a26d35c36f72 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747921146 +0200	commit: I have added plotting of energy profile
+03fb6e36eca62de708f3b223d4d9a26d35c36f72 c17f3bfa7ab4d92f039d61ff89866390644273ac aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747995680 +0200	commit: updated diffusion dataset
+c17f3bfa7ab4d92f039d61ff89866390644273ac ebc023f93ba7882d5089b583d3f2bbe4cd5beb1d aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1750420203 +0200	commit: Nams code is implemented to the project only not to reactor sim
+ebc023f93ba7882d5089b583d3f2bbe4cd5beb1d bafa85ac7156a7d8af45a5dd58b093d5b1a3f9cb aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1750681790 +0200	commit: added modified chem path but old examples may be broken
+bafa85ac7156a7d8af45a5dd58b093d5b1a3f9cb 86f4a1bef06a98bc90b35005e3cb27b1bd4f8bad aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1750772242 +0200	commit: updated examples
+86f4a1bef06a98bc90b35005e3cb27b1bd4f8bad 899730022d700fdeed34d694e07e934501f014ea aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1752655079 +0200	commit: new examples
+899730022d700fdeed34d694e07e934501f014ea b8bbe0df22421cf4d46844030dbae45413b2a65c aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1753272489 +0200	commit: added GP for adsorption prediction now it is ansemble knn + gp
+b8bbe0df22421cf4d46844030dbae45413b2a65c f40ff981cec92b5ad60b07453cc283a7f5d4c851 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1754898779 +0200	commit: add C2H4 isotherm ml
+f40ff981cec92b5ad60b07453cc283a7f5d4c851 b68c8ffdc5abe4d90b4586f350e313b57e231fe1 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756022600 +0200	commit: minor changes
+b68c8ffdc5abe4d90b4586f350e313b57e231fe1 b68c8ffdc5abe4d90b4586f350e313b57e231fe1 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756022665 +0200	checkout: moving from main to new_profile
+b68c8ffdc5abe4d90b4586f350e313b57e231fe1 6583787b1fc7920482d9bcff6b31a5ddb6a68c3e aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756024402 +0200	commit: new energy profile but constants are not working for now
+6583787b1fc7920482d9bcff6b31a5ddb6a68c3e 212d4b8d12ce73b9fdec5672bd7551ffd804329d aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756212461 +0200	commit: updated constants
+212d4b8d12ce73b9fdec5672bd7551ffd804329d b68c8ffdc5abe4d90b4586f350e313b57e231fe1 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756212492 +0200	checkout: moving from new_profile to main
+b68c8ffdc5abe4d90b4586f350e313b57e231fe1 b68c8ffdc5abe4d90b4586f350e313b57e231fe1 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756214299 +0200	reset: moving to HEAD
+b68c8ffdc5abe4d90b4586f350e313b57e231fe1 212d4b8d12ce73b9fdec5672bd7551ffd804329d aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756214327 +0200	checkout: moving from main to new_profile
+212d4b8d12ce73b9fdec5672bd7551ffd804329d e1b85f2c9b9a4eb81b46352c3494c2a7dfb74df5 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756222343 +0200	commit: fix reaction list but not constants
+e1b85f2c9b9a4eb81b46352c3494c2a7dfb74df5 d111e6ea04d962afe865d5370245a6728d7fc227 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756286233 +0200	commit: fix but not checked energies and constants
+d111e6ea04d962afe865d5370245a6728d7fc227 b68c8ffdc5abe4d90b4586f350e313b57e231fe1 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756286242 +0200	checkout: moving from new_profile to main
+b68c8ffdc5abe4d90b4586f350e313b57e231fe1 d111e6ea04d962afe865d5370245a6728d7fc227 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756286271 +0200	checkout: moving from main to new_profile
+d111e6ea04d962afe865d5370245a6728d7fc227 d0d02ce04ba1ab9637f31ea8fa9621e1dad72fd5 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756296382 +0200	commit: new energies and they looks correct for dimerization
+d0d02ce04ba1ab9637f31ea8fa9621e1dad72fd5 45cd642a51248a3fff65dcd1255b33f0de5f8ba8 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756397151 +0200	commit: fixed rates new simplified
+45cd642a51248a3fff65dcd1255b33f0de5f8ba8 88be1e25421b64bbb2a3f7dfd3c5fb2570240751 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1756725987 +0200	commit: fix energies simpl
+88be1e25421b64bbb2a3f7dfd3c5fb2570240751 306856f130bc44c404dbfca35e5bef02db28740e Aleksandr <hydrazine114@gmail.com> 1757594823 +0200	commit: fix diffusion
+306856f130bc44c404dbfca35e5bef02db28740e dffaebdc312d014370ecffcb6a61e5c13bd9d010 Aleksandr <hydrazine114@gmail.com> 1758044324 +0200	commit: added experiments notebooks
+dffaebdc312d014370ecffcb6a61e5c13bd9d010 3347ab483910b043745a07ea6273fae7a0a54770 Aleksandr <hydrazine114@gmail.com> 1758638211 +0200	commit: test
+3347ab483910b043745a07ea6273fae7a0a54770 05777a93f4ff91d4141976b90c3024f8a325a258 Aleksandr <hydrazine114@gmail.com> 1758640487 +0200	commit: update
+05777a93f4ff91d4141976b90c3024f8a325a258 78eade4851a706f38677df42e0ce6d21dfc4f354 Aleksandr <hydrazine114@gmail.com> 1758712736 +0200	commit: test
+78eade4851a706f38677df42e0ce6d21dfc4f354 e2e103e67401b9e9aae05c0f240a9ee332d184fb Aleksandr <hydrazine114@gmail.com> 1759411100 +0200	commit: improved rates but a bit
+e2e103e67401b9e9aae05c0f240a9ee332d184fb 9d37b266eceb1e6797995b4ad3bdd9a89f547e84 Aleksandr <hydrazine114@gmail.com> 1759676612 +0200	commit: start fixing soft overview
+9d37b266eceb1e6797995b4ad3bdd9a89f547e84 c110541bb88f76f61b8f045b2720143c65027005 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1760444231 +0200	commit: minor changes
+c110541bb88f76f61b8f045b2720143c65027005 0246da28bce6b15c958e1879a38621e7f63be436 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1760960175 +0200	commit: fixed diffusion

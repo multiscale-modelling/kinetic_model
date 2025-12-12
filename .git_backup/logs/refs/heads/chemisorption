@@ -1,0 +1,5 @@
+0000000000000000000000000000000000000000 d5beeb5d91db0cdaacaf9cfc159b2eb33636aa29 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747674270 +0200	branch: Created from HEAD
+d5beeb5d91db0cdaacaf9cfc159b2eb33636aa29 eb7debd224c6cf9e58bbe0b5f6afcd78000fcb56 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747682783 +0200	commit: for now it works
+eb7debd224c6cf9e58bbe0b5f6afcd78000fcb56 9d87b2668d6d77f9b9d254238130e580204143c8 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747687015 +0200	commit: chem sorb list creator
+9d87b2668d6d77f9b9d254238130e580204143c8 1dd934b7ad841b7dcdd23c6db10d70d5d2a7280c aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747688750 +0200	commit: made reactor simulation chemsorb shitty but made it
+1dd934b7ad841b7dcdd23c6db10d70d5d2a7280c 9bba08bfa53f919c025919a9f105e4679bfa7845 aleksandr.avdoshin <aleksandr.avdoshin@kit.edu> 1747813685 +0200	commit: fixed git push
