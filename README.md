@@ -1,93 +1,114 @@
-# kinetic_model
+<div align="center">
 
+# Kinetic Model
 
+_Multiscale toolkit for simulating Ni-catalysed olefin chain growth, diffusion, and adsorption._
 
-## Getting started
+</div>
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Overview
+- Deterministic ODE reactor solver (`kinetic_model.core`) that handles coupled reaction networks and capacity-weighted diffusion between compartments.
+- Machine-learning surrogates for adsorption capacities and intracrystalline diffusion (KNN/Gaussian-process regressors stored under `data/processed`).
+- Thermochemistry and energy-profile tooling (`kinetic_model.energy_profile`) to turn DFT results into relative free-energy landscapes and barrier dictionaries that plug directly into the reactor simulations.
+- Supplementary notebooks (`notebooks/`) for training surrogates and analysing experimental/DFT data, plus reproducible examples in `examples/`.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.kit.edu/aleksandr.avdoshin/kinetic_model.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://gitlab.kit.edu/aleksandr.avdoshin/kinetic_model/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+## Repository Layout
+| Path | Purpose |
+| --- | --- |
+| `src/kinetic_model/core` | Base `Reaction` ODE solver, diffusion-aware reactor (`Reaction_Diffusion`), and Eyring rate helper. |
+| `src/kinetic_model/constants` | ML models and utilities for adsorption/diffusion, energy-barrier loaders, and thermodynamic constants. |
+| `src/kinetic_model/energy_profile` | Parsers for DFT folders, thermochemistry (harmonic, anharmonic, and free-rotor treatments), relative energy calculators, and plotting helpers. |
+| `src/kinetic_model/simulation` | High-level simulation drivers (`ReactorSimulation`, chemisorption variants), reaction-list builders, plotting utilities, and synthetic-data generators. |
+| `data/` | Raw DFT structures, gas-phase molecules, YAML metadata, and pretrained `.pkl` surrogates (`data/processed`). |
+| `examples/` | Ready-to-run settings files and notebooks demonstrating energy-profile extraction. |
+| `notebooks/` | Jupyter notebooks for adsorption/diffusion model development and loading studies. |
+| `tests/` | Pytest suite that covers kinetic core logic, diffusion handling, rate calculations, and runner utilities. |
 
 ## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+1. **Create an environment (optional but recommended):**
+   ```bash
+   conda env create -f environment.yml
+   conda activate kinetic_model
+   ```
+   or manually install Python ≥3.12.
+2. **Install the package and dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   pip install -e .
+   ```
+   The editable install exposes `kinetic_model` for notebooks, scripts, and tests.
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+## Quick Start
+```python
+from kinetic_model.simulation.run_reactor import ReactorSimulationChemisorptionSimplified
+from kinetic_model.constants.energy_profile import EnergyBarriersSimplifyed
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+energy = EnergyBarriersSimplifyed(pressure=5.0, temperature=320.0)
+sim = ReactorSimulationChemisorptionSimplified(
+    N=16,
+    T=320.0,
+    pressure=5.0,
+    L=8.0,
+    time_hours=2.0,
+    n_steps=500,
+    diff_model_path='../data/processed/diffusion_extrap_place_holder_model.pkl',
+    ads_model_path='../data/processed/knn_adsorption_slope_model.pkl',
+    energy_model=energy,
+    initial_concs={'CatC2(C2)': 1e-2, 'C2': 1}
+)
+distribution_df, probability_traces = sim.run()
+```
+- `distribution_df` summarises the final olefin chain-length distribution and probabilities.
+- `probability_traces` (time-series DataFrame) tracks intra-/extra-crystalline concentrations for each chain length.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+## Energy Profiles and Barriers
+1. **Prepare DFT folders:** populate `data/structures/<model_method>/<pathway>/<system>` and `data/gas-phase-molecules/<model>/…` with `POSCAR`/`mol.xyz`, `energy.dat`, `freq.txt`, and optional `rotAtoms.yaml`.
+2. **Compute thermochemistry:**
+   ```python
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+    from kinetic_model.energy_profile.energy_processing import calculate_relative_energies
+    import os 
+    import numpy as np
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+    temperatures = [300]        # Can be varied
+    pressures = [101325.]           # Can be carried
+    models = ['QM-QM_TPSSh-PBED3']   # Options: ['QM-QM_M06L-PBED3', 'QM-QM_TPPSh-PBED3]  
+    pathways = ['trigonal']         # Options: ['trigonal', 'hexagonal']
+    ref_struc = '1'                 # Choose either 1 or 5
+    energy_type = 'Gibbs free energy'   # Options: ['Electronic energy', 'Enthalpy', 'Gibbs free energy']
+    energy_unit = 'kJ/mol'              # Options: ['eV', 'kJ/mol', 'kcal/mol']
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+    custom_order = ["1", "2", "3", "4", "5", "5a", "6", "1p", "7", "8", "9", "5p", "6p", "1pp", "10", "11", "12", "5pp", "6pp", "1ppp", "2-3", "3-4", "6-1p", "7-8", "8-9", "6p-1pp", "10-11", "11-12", "6pp-1ppp"]  # Use for sorting the intermediates in a table (or pd.DataFrame)
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+    rel_results = calculate_relative_energies(
+        structures_dir=os.path.abspath('../data/structures'),
+        molecules_dir=os.path.abspath('../data/gas-phase-molecules'),
+        temperatures=temperatures,
+        models=models,
+        ref_struc=ref_struc,
+        pathways=pathways,
+        pressures=pressures
+    )
+
+   ```
+3. **Convert to barriers:** instantiate `EnergyBarriers` or `EnergyBarriersSimplifyed` with the target temperature/pressure; call `get_energy_barriers()` to obtain ΔG‡ dictionaries that feed `prepare_constants_*` or a custom simulation setup.
+
+## Surrogate Models & Data
+- **Adsorption:** `data/processed/knn_adsorption_model.pkl` contains the grouped/scaled KNN (`AdsorptionKNN` / `AdsorptionKNNSlopeExtrap`). Re-train using `notebooks/adsorbtion_process_ml.ipynb`, then `joblib.dump` the estimator.
+- **Diffusion:** `data/processed/diffusion_model*.pkl` stores LightGBM-based regressors (see `notebooks/diffusion_process_ml.ipynb`). Rates are later converted to s⁻¹ via pore-geometry scaling inside `ReactorSimulation`.
+- **DFT sources:** `data/structures`, `data/gas-phase-molecules`, and `data/formulae.yaml` describe the thermochemistry inputs. The mini `data/README` highlights shared intermediates between pathways.
+
+## Examples & Notebooks
+- `test_soft.ipynb` - the main example file where you can find more detailed examples how to use current soft. `examples/settings.yaml` and `examples/c8_energy_profiles_settings.yaml` demonstrate how to configure pathway, model, and plotting options for energy-profile reports.
+- Notebooks in `notebooks/` reproduce adsorption/diffusion training, sanity-check Eyring prefactors, and explore C₂ loading. They assume you installed the package in editable mode so imports resolve.
+
+## Testing & Development
+- Run the full suite with `pytest` from the repository root. Key tests (`tests/test_core.py`, `tests/test_diffusion_behavior.py`, etc.) validate ODE integration, diffusion bookkeeping, barrier-to-rate conversions, and runner wiring.
+- When adding features, prefer dropping new modules under `src/kinetic_model` and extend the pytest coverage alongside; notebooks and examples can reference the same public API.
 
 ## License
-For open source projects, say how it is licensed.
+The project is released under the MIT License 
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+---
+
+Questions or ideas? Open an issue or start a discussion in your preferred tracker—contributions that improve the kinetic workflow, data parsers, or surrogate accuracy are very welcome.
