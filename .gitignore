@@ -1,4 +1,3 @@
-experiments/files
-experiments/old_notebooks
 data/files
 ssh-image
+experiments/**
