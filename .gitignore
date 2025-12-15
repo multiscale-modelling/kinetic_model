@@ -1,3 +1,4 @@
 data/files
 ssh-image
-experiments/**
+/experiments/
+
