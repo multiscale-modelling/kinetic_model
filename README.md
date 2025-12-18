@@ -1,114 +1,218 @@
-<div align="center">
 
-# Kinetic Model
-
-_Multiscale toolkit for simulating Ni-catalysed olefin chain growth, diffusion, and adsorption._
-
-</div>
+# Dataset for Multiscale Modeling of Olefin Adsorption, Diffusion, and Kinetics in NU-1000
 
 ## Overview
-- Deterministic ODE reactor solver (`kinetic_model.core`) that handles coupled reaction networks and capacity-weighted diffusion between compartments.
-- Machine-learning surrogates for adsorption capacities and intracrystalline diffusion (KNN/Gaussian-process regressors stored under `data/processed`).
-- Thermochemistry and energy-profile tooling (`kinetic_model.energy_profile`) to turn DFT results into relative free-energy landscapes and barrier dictionaries that plug directly into the reactor simulations.
-- Supplementary notebooks (`notebooks/`) for training surrogates and analysing experimental/DFT data, plus reproducible examples in `examples/`.
 
-## Repository Layout
-| Path | Purpose |
-| --- | --- |
-| `src/kinetic_model/core` | Base `Reaction` ODE solver, diffusion-aware reactor (`Reaction_Diffusion`), and Eyring rate helper. |
-| `src/kinetic_model/constants` | ML models and utilities for adsorption/diffusion, energy-barrier loaders, and thermodynamic constants. |
-| `src/kinetic_model/energy_profile` | Parsers for DFT folders, thermochemistry (harmonic, anharmonic, and free-rotor treatments), relative energy calculators, and plotting helpers. |
-| `src/kinetic_model/simulation` | High-level simulation drivers (`ReactorSimulation`, chemisorption variants), reaction-list builders, plotting utilities, and synthetic-data generators. |
-| `data/` | Raw DFT structures, gas-phase molecules, YAML metadata, and pretrained `.pkl` surrogates (`data/processed`). |
-| `examples/` | Ready-to-run settings files and notebooks demonstrating energy-profile extraction. |
-| `notebooks/` | Jupyter notebooks for adsorption/diffusion model development and loading studies. |
-| `tests/` | Pytest suite that covers kinetic core logic, diffusion handling, rate calculations, and runner utilities. |
+This dataset accompanies the publication describing a multiscale modeling framework for olefin adsorption, diffusion, and reaction kinetics in the NU-1000 metal–organic framework. The dataset provides all raw simulation inputs, processed data, and reference electronic-structure calculations required to reproduce the results reported in the paper.
 
-## Installation
-1. **Create an environment (optional but recommended):**
-   ```bash
-   conda env create -f environment.yml
-   conda activate kinetic_model
-   ```
-   or manually install Python ≥3.12.
-2. **Install the package and dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   pip install -e .
-   ```
-   The editable install exposes `kinetic_model` for notebooks, scripts, and tests.
+The dataset is organized into three main components:
 
-## Quick Start
-```python
-from kinetic_model.simulation.run_reactor import ReactorSimulationChemisorptionSimplified
-from kinetic_model.constants.energy_profile import EnergyBarriersSimplifyed
-
-energy = EnergyBarriersSimplifyed(pressure=5.0, temperature=320.0)
-sim = ReactorSimulationChemisorptionSimplified(
-    N=16,
-    T=320.0,
-    pressure=5.0,
-    L=8.0,
-    time_hours=2.0,
-    n_steps=500,
-    diff_model_path='../data/processed/diffusion_extrap_place_holder_model.pkl',
-    ads_model_path='../data/processed/knn_adsorption_slope_model.pkl',
-    energy_model=energy,
-    initial_concs={'CatC2(C2)': 1e-2, 'C2': 1}
-)
-distribution_df, probability_traces = sim.run()
-```
-- `distribution_df` summarises the final olefin chain-length distribution and probabilities.
-- `probability_traces` (time-series DataFrame) tracks intra-/extra-crystalline concentrations for each chain length.
-
-## Energy Profiles and Barriers
-1. **Prepare DFT folders:** populate `data/structures/<model_method>/<pathway>/<system>` and `data/gas-phase-molecules/<model>/…` with `POSCAR`/`mol.xyz`, `energy.dat`, `freq.txt`, and optional `rotAtoms.yaml`.
-2. **Compute thermochemistry:**
-   ```python
-
-    from kinetic_model.energy_profile.energy_processing import calculate_relative_energies
-    import os 
-    import numpy as np
-
-    temperatures = [300]        # Can be varied
-    pressures = [101325.]           # Can be carried
-    models = ['QM-QM_TPSSh-PBED3']   # Options: ['QM-QM_M06L-PBED3', 'QM-QM_TPPSh-PBED3]  
-    pathways = ['trigonal']         # Options: ['trigonal', 'hexagonal']
-    ref_struc = '1'                 # Choose either 1 or 5
-    energy_type = 'Gibbs free energy'   # Options: ['Electronic energy', 'Enthalpy', 'Gibbs free energy']
-    energy_unit = 'kJ/mol'              # Options: ['eV', 'kJ/mol', 'kcal/mol']
-
-    custom_order = ["1", "2", "3", "4", "5", "5a", "6", "1p", "7", "8", "9", "5p", "6p", "1pp", "10", "11", "12", "5pp", "6pp", "1ppp", "2-3", "3-4", "6-1p", "7-8", "8-9", "6p-1pp", "10-11", "11-12", "6pp-1ppp"]  # Use for sorting the intermediates in a table (or pd.DataFrame)
-
-    rel_results = calculate_relative_energies(
-        structures_dir=os.path.abspath('../data/structures'),
-        molecules_dir=os.path.abspath('../data/gas-phase-molecules'),
-        temperatures=temperatures,
-        models=models,
-        ref_struc=ref_struc,
-        pathways=pathways,
-        pressures=pressures
-    )
-
-   ```
-3. **Convert to barriers:** instantiate `EnergyBarriers` or `EnergyBarriersSimplifyed` with the target temperature/pressure; call `get_energy_barriers()` to obtain ΔG‡ dictionaries that feed `prepare_constants_*` or a custom simulation setup.
-
-## Surrogate Models & Data
-- **Adsorption:** `data/processed/knn_adsorption_model.pkl` contains the grouped/scaled KNN (`AdsorptionKNN` / `AdsorptionKNNSlopeExtrap`). Re-train using `notebooks/adsorbtion_process_ml.ipynb`, then `joblib.dump` the estimator.
-- **Diffusion:** `data/processed/diffusion_model*.pkl` stores LightGBM-based regressors (see `notebooks/diffusion_process_ml.ipynb`). Rates are later converted to s⁻¹ via pore-geometry scaling inside `ReactorSimulation`.
-- **DFT sources:** `data/structures`, `data/gas-phase-molecules`, and `data/formulae.yaml` describe the thermochemistry inputs. The mini `data/README` highlights shared intermediates between pathways.
-
-## Examples & Notebooks
-- `test_soft.ipynb` - the main example file where you can find more detailed examples how to use current soft. `examples/settings.yaml` and `examples/c8_energy_profiles_settings.yaml` demonstrate how to configure pathway, model, and plotting options for energy-profile reports.
-- Notebooks in `notebooks/` reproduce adsorption/diffusion training, sanity-check Eyring prefactors, and explore C₂ loading. They assume you installed the package in editable mode so imports resolve.
-
-## Testing & Development
-- Run the full suite with `pytest` from the repository root. Key tests (`tests/test_core.py`, `tests/test_diffusion_behavior.py`, etc.) validate ODE integration, diffusion bookkeeping, barrier-to-rate conversions, and runner wiring.
-- When adding features, prefer dropping new modules under `src/kinetic_model` and extend the pytest coverage alongside; notebooks and examples can reference the same public API.
-
-## License
-The project is released under the MIT License 
+- **Adsorption**: Grand Canonical Monte Carlo (GCMC) simulations performed with RASPA
+- **Diffusion**: Widom insertion–based diffusion free-energy profiles for olefins in NU-1000
+- **Kinetic model**: Python software and DFT reference data for kinetic and reactor-level simulations
 
 ---
 
-Questions or ideas? Open an issue or start a discussion in your preferred tracker—contributions that improve the kinetic workflow, data parsers, or surrogate accuracy are very welcome.
+## Dataset Structure
+
+
+```
+.
+├── adsorption/
+│   ├── C2H4_single/
+│   └── mixture_validation_set/
+│
+├── diffusion/
+│   ├── set_0/
+│   ├── set_1/
+│   └── set_2/
+│
+└── kinetic_model/
+    ├── build/
+    ├── data/
+    ├── examples/
+    ├── notebooks/
+    ├── src/
+    ├── tests/
+    ├── pyproject.toml
+    ├── environment.yml
+    ├── requirements.txt
+    ├── requirements-clean.txt
+    ├── clean_requirements.txt
+    └── README.md
+```
+
+
+---
+
+## Adsorption (`adsorption/`)
+
+This directory contains **RASPA GCMC simulations** for olefin adsorption in NU-1000.
+
+### `C2H4_single/`
+- Adsorption simulations of **ethylene** in NU-1000
+- Performed over a range of temperatures and pressures
+- Used to parameterize adsorption thermodynamics in the kinetic model
+
+### `mixture_validation_set/`
+- Adsorption data for **C₂–C₁₀ olefins**
+- Includes simulations at diverse thermodynamic conditions
+- Used to **validate surrogate machine-learning models** for adsorption prediction, as reported in the publication
+
+---
+
+## Diffusion (`diffusion/`)
+
+This directory contains **Widom insertion–based diffusion calculations** for olefins in NU-1000.
+
+### `set_0/`, `set_1/`, `set_2/`
+- Three statistically independent Widom diffusion simulation sets
+- Each set samples the diffusion free-energy landscape independently
+- The three datasets are combined in post-processing to improve statistical robustness and reduce noise
+
+The resulting diffusion profiles are used to extract effective diffusion barriers and rates for kinetic modeling.
+
+---
+
+## Kinetic Model (`kinetic_model/`)
+
+This directory contains the **Python-based kinetic modeling framework** used in the publication, together with all **DFT reference data** required to parameterize the model.
+
+The kinetic model integrates:
+- DFT-derived reaction energetics and vibrational data
+- Gas-phase thermochemistry
+- Adsorption thermodynamics
+- Diffusion limitations
+- Batch and flow (stream) reactor formulations
+
+The kinetic model is distributed as a standalone Python package.
+
+Detailed installation instructions, usage examples, and API documentation are provided in:
+
+```
+
+kinetic_model/README.md
+
+```
+
+---
+
+## DFT Reference Data (`kinetic_model/data/`)
+
+The `data/` directory contains results from **density functional theory (DFT) calculations** within a hierarchical cluster approach used to construct accurate free-energy profiles and reaction rate constants.
+
+These data include electronic energies, dispersion corrections, vibrational frequencies, and optimized geometries for gas-phase molecules, adsorbed intermediates, and transition states.
+
+---
+
+### Gas-Phase Molecules
+
+```
+
+kinetic_model/data/gas-phase-molecules/
+
+```
+
+Gas-phase reference results for **linear olefins (C₂–C₈)** used to compute free energies.
+
+#### Periodic reference calculations
+
+- `pbc_PBED3BJ/`
+  - Periodic DFT calculations using the **PBE-D3(BJ)** functional
+  - Typical files:
+    - `energy.dat` – total electronic energy in eV
+    - `freq.txt` – harmonic vibrational frequencies
+    - `POSCAR` – optimized molecular structure
+
+#### QM/QM-corrected energies
+
+- `QM-QM_PBED3-PBED3/`
+- `QM-QM_M06L-PBED3/`
+- `QM-QM_TPSSh-PBED3/`
+
+These directories contain QM/QM-corrected gas-phase energies, where:
+- Periodic PBE-D3 calculations provide reference geometries
+- Cluster-level calculations (PBE-D3, M06-L, TPSSh) are used to refine energetics
+
+Typical files include:
+- `energy.dat` – periodic electronic energy in eV
+- `energy_cluster.dat` – cluster-level corrected energy in Eh
+- `freq.txt` – vibrational frequencies
+- `mol.xyz` – molecular geometry
+- `POSCAR` – periodic reference structure
+
+---
+
+### Adsorbed Intermediates and Transition States
+
+```
+
+kinetic_model/data/structures/
+
+```
+
+This directory contains results from **DFT calculations** for **adsorbed intermediates and transition states** involved in olefin oligomerization inside NU-1000.
+
+#### Directory hierarchy
+
+```
+
+kinetic_model/data/structures/pbc_PBED3BJ/
+├── trigonal/
+│   └── README
+└── hexagonal/
+├── Int_1_Ni-ethyl/
+├── Int_7_et-Ni-butyl/
+├── Int_8_Ni-hexyl/
+├── Int_9_H-Ni-hex/
+├── Int_10_et-Ni-hexyl/
+├── Int_11_Ni-octyl/
+├── Int_12_H-Ni-oct/
+├── TS_10-11/
+└── ...
+
+```
+
+Each directory corresponds to a specific **adsorbed intermediate (`Int_*`) or transition state (`TS_*`)**.
+
+Typical contents:
+- `energy.dat` – electronic energy in eV
+- `Edisp.dat` – dispersion contribution in eV
+- `freq.txt` – vibrational frequencies
+- `POSCAR` – optimized periodic structure
+- `rotAtoms.yaml`, `rotAtoms.dat` – definition of internal rotors for entropy corrections
+
+Both **hexagonal and trigonal NU-1000 unit cells** are provided where relevant.
+
+---
+
+## Purpose of the DFT Data
+
+The DFT datasets are used to:
+- Construct accurate free energy profiles using a hierarchical cluster approach
+- Compute reaction rate constants via transition-state theory
+
+All DFT data are directly consumed by the kinetic modeling framework without manual preprocessing.
+
+---
+
+## Reproducibility
+
+- All raw simulation inputs and processed data used in the publication are provided
+- Directory names encode the employed functional and correction scheme
+- Input geometries, energies, and vibrational data are explicitly included
+- The kinetic model can be executed using only the contents of this dataset
+
+---
+
+## Citation
+
+If you use this dataset or the accompanying kinetic modeling software, please cite the associated publication.
+
+---
+
+## Contact
+
+For questions regarding the dataset or the kinetic modeling framework, please contact the corresponding authors listed in the associated publication.
+```
+
