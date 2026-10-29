@@ -20,7 +20,7 @@ _Multiscale toolkit for simulating Ni-catalysed olefin chain growth, diffusion, 
 | `src/kinetic_model/energy_profile` | Parsers for DFT folders, thermochemistry (harmonic, anharmonic, and free-rotor treatments), relative energy calculators, and plotting helpers. |
 | `src/kinetic_model/simulation` | High-level simulation drivers (`ReactorSimulation`, chemisorption variants), reaction-list builders, plotting utilities, and synthetic-data generators. |
 | `data/` | Raw DFT structures, gas-phase molecules, YAML metadata, and pretrained `.pkl` surrogates (`data/processed`). |
-| `examples/` | Ready-to-run settings files and notebooks demonstrating energy-profile extraction. |
+| `examples/` | Executed notebooks (surrogates, solvers, energy profile, kinetic model) and plotting settings. |
 | `notebooks/` | Jupyter notebooks for adsorption/diffusion model development and loading studies. |
 | `tests/` | Pytest suite that covers kinetic core logic, diffusion handling, rate calculations, and runner utilities. |
 
@@ -102,7 +102,7 @@ distribution_df, probability_traces = sim.run()
 - **DFT sources:** `data/structures`, `data/gas-phase-molecules`, and `data/formulae.yaml` describe the thermochemistry inputs. The mini `data/README` highlights shared intermediates between pathways.
 
 ## Examples & Notebooks
-- `test_soft.ipynb` - the main example file where you can find more detailed examples how to use current soft. `examples/settings.yaml` and `examples/c8_energy_profiles_settings.yaml` demonstrate how to configure pathway, model, and plotting options for energy-profile reports.
+- `01_surrogates`, `02_reaction_solver`, `03_energy_profile`, `04_kinetic_model` - example notebooks in `examples/` (run from that folder). `examples/settings.yaml` and `examples/c8_energy_profiles_settings.yaml` configure the energy-profile plot.
 - Notebooks in `notebooks/` reproduce adsorption/diffusion training, sanity-check Eyring prefactors, and explore C₂ loading. They assume you installed the package in editable mode so imports resolve.
 
 ## Testing & Development
