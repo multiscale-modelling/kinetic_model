@@ -102,7 +102,7 @@ distribution_df, probability_traces = sim.run()
 - **DFT sources:** `data/structures`, `data/gas-phase-molecules`, and `data/formulae.yaml` describe the thermochemistry inputs. The mini `data/README` highlights shared intermediates between pathways.
 
 ## Examples & Notebooks
-- `01_surrogates`, `02_reaction_solver`, `03_energy_profile`, `04_kinetic_model` - example notebooks in `examples/` (run from that folder). `examples/settings.yaml` and `examples/c8_energy_profiles_settings.yaml` configure the energy-profile plot.
+- `01_surrogates`, `02_reaction_solver`, `03_energy_profile`, `04_kinetic_model`, `05_barrier_sets_trends` - example notebooks in `examples/` (run from that folder). `examples/settings.yaml` and `examples/c8_energy_profiles_settings.yaml` configure the energy-profile plot.
 - Notebooks in `notebooks/` reproduce adsorption/diffusion training, sanity-check Eyring prefactors, and explore C₂ loading. They assume you installed the package in editable mode so imports resolve.
 
 ## Testing & Development
