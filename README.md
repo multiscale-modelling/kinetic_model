@@ -38,6 +38,9 @@ _Multiscale toolkit for simulating Ni-catalysed olefin chain growth, diffusion, 
    ```
    The editable install exposes `kinetic_model` for notebooks, scripts, and tests.
 
+## Driver scripts
+`scripts/` holds the command-line runners (`run_model.py`, `run_distributions.py`, `run_tof.py`). Pressure counting, barrier sets and crowding options: [docs/model.md](docs/model.md).
+
 ## Quick Start
 ```python
 from kinetic_model.simulation.run_reactor import ReactorSimulationChemisorptionSimplified
