@@ -31,7 +31,7 @@ At 1 bar `old` and `corrected` coincide.
 
 Three DFT sets: `_di` (C4), `_tri` (C6), `_tetra` (C8+).
 
-| | `tetra` (default) | `individual` (`fixed`) | `legacy` |
+| | `tetra` (default) | `individual` (`per_step`) | `legacy` |
 |---|---|---|---|
 | growth C2->C4, C4->C6, C6+ | `_tetra` | `_di`, `_tri`, `_tetra` | `_di`, `_tri`, `_tetra` |
 | elimination C4 / C6 / C8+ | `_tetra` | `_di` / `_tri` / `_tetra` | `_tri` / `_tetra` / `_tetra` |

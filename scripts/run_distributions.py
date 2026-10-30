@@ -34,7 +34,7 @@ def main(argv=None):
     ap.add_argument('--tmax', type=float, default=540)
     ap.add_argument('--tstep', type=float, default=15)
     ap.add_argument('--models', nargs='+', default=['corrected'], choices=['corrected', 'old', 'gas', 'ideal'])
-    ap.add_argument('--elim-map', default='tetra', choices=['legacy', 'fixed', 'tetra'],
+    ap.add_argument('--elim-map', default='tetra', choices=['legacy', 'per_step', 'tetra'],
                     help="elimination constants: original list, or each olefin its own barrier (km.simulate)")
     ap.add_argument('--crowding', nargs='+', default=['none'], choices=['none', *km.CROWDING],
                     help="product activity in the loaded pore (km.product_activity)")

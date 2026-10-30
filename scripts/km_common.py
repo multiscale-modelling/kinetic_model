@@ -5,7 +5,7 @@ data/, where '../data' points back to the same folder.
 
 run_case() (used by run_model.py) exposes the two consistent variants under plain names:
 counting='pore' -> model='corrected', counting='gas' -> model='ideal'; barriers='tetra' /
-'individual' / 'legacy' -> elim_map='tetra' / 'fixed' / 'legacy'. Details: docs/model.md.
+'individual' / 'legacy' -> elim_map='tetra' / 'per_step' / 'legacy'. Details: docs/model.md.
 
 Ways of letting ethylene pressure enter in simulate() (see docs/model.md):
   model='corrected'  Gibbs energies at p0 = 1 bar; pressure enters only through the
@@ -390,7 +390,7 @@ def _simulate_once(T, p, mode='batch', particle_nm=None, model='corrected', hour
         argument) is the total site fraction handed in by that iteration.
     ads_interp=True: pore capacities interpolated linearly in T (AdsInterpT).
     elim_map='legacy': elimination constants as in the legacy reaction list (C4 gets _tri,
-    C6+ _tetra); 'fixed': C4 gets _di, C6 _tri, C8+ _tetra (each olefin its own barrier);
+    C6+ _tetra); 'per_step': C4 gets _di, C6 _tri, C8+ _tetra (each olefin its own barrier);
     'tetra' (default since 2026-10-26): every insertion and elimination uses the _tetra
     constants, i.e. one barrier set for all chain lengths.
     'bep': every insertion and elimination from a BEP line through the three DFT points of its
@@ -440,7 +440,7 @@ def _simulate_once(T, p, mode='batch', particle_nm=None, model='corrected', hour
                 r._reactions[i] = (rx[0], r.consts[f'k_elimination_{b}'], r.consts[f'k_deelimination_{b}'])
         r.solver = Reaction_Diffusion(reactions=r._reactions, capacity=r._capacity,
                                       fixed_concentrations=['C2', 'C2_out'] if mode == 'flow' else None)
-    if elim_map == 'fixed':
+    if elim_map == 'per_step':
         # elimination off-by-one in the legacy reaction list (docs/model.md).
         # the legacy list gives CatC4 the _tri (hexene, from state 10) and CatC6 the _tetra
         # (octene) elimination constants; _di is the butene path from state 7 = CatC4(C2)
@@ -499,7 +499,7 @@ def _simulate_once(T, p, mode='batch', particle_nm=None, model='corrected', hour
 
 
 PRESSURE_COUNTING = {'pore': 'corrected', 'gas': 'ideal'}          # run_case name -> simulate model
-BARRIER_SCHEMES = {'tetra': 'tetra', 'individual': 'fixed', 'legacy': 'legacy'}   # -> elim_map
+BARRIER_SCHEMES = {'tetra': 'tetra', 'individual': 'per_step', 'legacy': 'legacy'}   # -> elim_map
 
 
 def run_case(T, p, counting='pore', barriers='tetra', mode='batch', particle_nm=None, hours=1.0,

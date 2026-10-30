@@ -15,7 +15,7 @@ TEMPS = [300.0, 360.0, 420.0, 480.0, 540.0]
 R = 8.314462618e-3
 
 
-def reactions(T, p=1.0, elim_map='fixed', **kw):
+def reactions(T, p=1.0, elim_map='per_step', **kw):
     """Final reaction list (after elim_map / crowding / lattice) of a tiny run, before rescaling."""
     cap = {}
     orig = km.normilize_constants
@@ -77,10 +77,10 @@ def test_bep_reproduces_dft(T):
 
 
 @pytest.mark.parametrize('T', TEMPS)
-def test_fixed_bep_thermodynamically_consistent(T):
+def test_per_step_bep_thermodynamically_consistent(T):
     """Cn + C2 -> Cn+2 through the network must not depend on the barrier model where DFT exists
-    (n = 2, 4, 6: own DFT steps). 'fixed' is the reference; BEP must match it."""
-    f, b = reactions(T, elim_map='fixed'), reactions(T, elim_map='bep')
+    (n = 2, 4, 6: own DFT steps). 'per_step' is the reference; BEP must match it."""
+    f, b = reactions(T, elim_map='per_step'), reactions(T, elim_map='bep')
     for n in (2, 4, 6):
         assert net_growth(b, T, n) == pytest.approx(net_growth(f, T, n), abs=1.0)
 
@@ -97,7 +97,7 @@ def test_crowding_shifts_K_by_gamma(T):
 def test_batch_conserves_molecules_in_ldf():
     """No reaction (no sites): pore + gas totals of C2 constant, final split by capacity."""
     _, ts = km.simulate(400.0, 10.0, mode='batch', particle_nm=300.0, model='corrected', hours=1.0,
-                        n_steps=50, elim_map='fixed', site_frac=1e-12)
+                        n_steps=50, elim_map='per_step', site_frac=1e-12)
     tot = ts['C2'] + ts['C2_out']
     assert tot.iloc[-1] == pytest.approx(tot.iloc[0], rel=1e-6)
 
@@ -114,7 +114,7 @@ def test_network_consistency_flags_high_T_low_p():
 def test_filter_flag_refuses_inconsistent_points():
     with pytest.raises(km.InconsistentNetworkError, match='540 K, 1 bar'):
         km.simulate(540.0, 1.0, mode='flow', particle_nm=300.0, model='corrected', hours=1e-6, n_steps=3,
-                    elim_map='fixed', check_network='filter')
+                    elim_map='per_step', check_network='filter')
     with pytest.warns(UserWarning, match='inconsistent'):
         km.simulate(540.0, 1.0, mode='flow', particle_nm=300.0, model='corrected', hours=1e-6, n_steps=3,
-                    elim_map='fixed')
+                    elim_map='per_step')
