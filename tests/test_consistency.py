@@ -25,7 +25,7 @@ def reactions(T, p=1.0, elim_map='per_step', **kw):
         return orig(rx, r_max)
     km.normilize_constants = grab
     try:
-        km.simulate(T, p, mode='batch', particle_nm=None, model='corrected', hours=1e-9, n_steps=3,
+        km.simulate(T, p, mode='batch', particle_nm=None, model='pore', hours=1e-9, n_steps=3,
                     elim_map=elim_map, **kw)
     finally:
         km.normilize_constants = orig
@@ -49,14 +49,14 @@ def net_growth(rx, T, n):
 def test_dft_barriers_positive(T):
     """Eyring_k clips negative barriers to 0; that would silently break detailed balance."""
     for p in (1.0, 50.0):
-        for model in ('corrected', 'old'):
+        for model in ('pore', 'old'):
             bp = km.energy_model(T, p, model).get_energy_barriers()
             assert min(bp.values()) > 0, (model, p, bp)
 
 
 @pytest.mark.parametrize('T', TEMPS)
 def test_pressure_counted_once(T):
-    """corrected: rate constants independent of p; pressure enters only through pore [C2]."""
+    """pore: rate constants independent of p; pressure enters only through pore [C2]."""
     a, b = reactions(T, 1.0), reactions(T, 50.0)
     for k in a:
         if '<D>' not in k:
@@ -67,7 +67,7 @@ def test_pressure_counted_once(T):
 
 @pytest.mark.parametrize('T', TEMPS)
 def test_bep_reproduces_dft(T):
-    bp = km.energy_model(T, 1.0, 'corrected').get_energy_barriers()
+    bp = km.energy_model(T, 1.0, 'pore').get_energy_barriers()
     bep, fit = km.bep_barriers(bp, 16)
     for step, pts in km.BEP_POINTS.items():
         assert 0 <= fit[step][1] <= 1
@@ -96,7 +96,7 @@ def test_crowding_shifts_K_by_gamma(T):
 
 def test_batch_conserves_molecules_in_ldf():
     """No reaction (no sites): pore + gas totals of C2 constant, final split by capacity."""
-    _, ts = km.simulate(400.0, 10.0, mode='batch', particle_nm=300.0, model='corrected', hours=1.0,
+    _, ts = km.simulate(400.0, 10.0, mode='batch', particle_nm=300.0, model='pore', hours=1.0,
                         n_steps=50, elim_map='per_step', site_frac=1e-12)
     tot = ts['C2'] + ts['C2_out']
     assert tot.iloc[-1] == pytest.approx(tot.iloc[0], rel=1e-6)
@@ -113,8 +113,8 @@ def test_network_consistency_flags_high_T_low_p():
 
 def test_filter_flag_refuses_inconsistent_points():
     with pytest.raises(km.InconsistentNetworkError, match='540 K, 1 bar'):
-        km.simulate(540.0, 1.0, mode='flow', particle_nm=300.0, model='corrected', hours=1e-6, n_steps=3,
+        km.simulate(540.0, 1.0, mode='flow', particle_nm=300.0, model='pore', hours=1e-6, n_steps=3,
                     elim_map='per_step', check_network='filter')
     with pytest.warns(UserWarning, match='inconsistent'):
-        km.simulate(540.0, 1.0, mode='flow', particle_nm=300.0, model='corrected', hours=1e-6, n_steps=3,
+        km.simulate(540.0, 1.0, mode='flow', particle_nm=300.0, model='pore', hours=1e-6, n_steps=3,
                     elim_map='per_step')

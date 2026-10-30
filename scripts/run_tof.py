@@ -5,7 +5,7 @@ TOF = ethylene molecules built into products (C4+) per Ni site per hour:
 At 300 K, 1 bar this gives 3.5e3 h^-1 for all particle sizes, the value in the paper
 (npj Comput. Mater. 2026, SI Fig. S14a).
 
-Two scans (model='corrected' unless --models says otherwise):
+Two scans (model='pore' unless --models says otherwise):
   --scan p : 300 K, pressures log-spaced 1-50 bar
   --scan T : 1 bar, 300-430 K (validity limit of the reduced network at 1 bar)
 
@@ -39,7 +39,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--scan', choices=['p', 'T'], required=True)
     ap.add_argument('--sizes', type=float, nargs='+', default=[300, 1e5, 1e6], help='nm')
-    ap.add_argument('--models', nargs='+', default=['corrected'], choices=['corrected', 'old'])
+    ap.add_argument('--models', nargs='+', default=['pore'], choices=['pore', 'old'])
     ap.add_argument('--out', required=True)
     a = ap.parse_args(argv)
     a.out = os.path.join(CALLER_CWD, a.out)

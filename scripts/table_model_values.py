@@ -34,10 +34,10 @@ def b3_shares(res):
 
 def b4_fits(res):
     t = pd.read_csv(os.path.join(res, 'tof_vs_T_1bar.csv'))
-    t = t[(t.particle == SIZE) & (t.model == 'corrected')].drop_duplicates('T')
+    t = t[(t.particle == SIZE) & (t.model == 'pore')].drop_duplicates('T')
     ea = -np.polyfit(1 / t['T'], np.log(t.tof_per_h), 1)[0] * R
     p = pd.read_csv(os.path.join(res, 'tof_vs_p_300K.csv'))
-    p = p[(p.particle == SIZE) & (p.model == 'corrected')].drop_duplicates('pressure_bar').sort_values('pressure_bar')
+    p = p[(p.particle == SIZE) & (p.model == 'pore')].drop_duplicates('pressure_bar').sort_values('pressure_bar')
     lp, lt = np.log(p.pressure_bar.values), np.log(p.tof_per_h.values)
     return {'Ea_app_kJmol': round(float(ea), 1),
             'order_low_p': round(float((lt[1] - lt[0]) / (lp[1] - lp[0])), 2),
@@ -54,8 +54,8 @@ def main(argv=None):
     res = os.path.join(CALLER_CWD, a.results_dir)
     out = {'b3_300K_1bar_flow': b3_shares(res), **b4_fits(res)}
     if not a.no_sim:
-        out['tof_293K_20bar'] = float(tof(293, 20, SIZE_NM, 'corrected'))
-        out['tof_308K_50bar'] = float(tof(308, 50, SIZE_NM, 'corrected'))
+        out['tof_293K_20bar'] = float(tof(293, 20, SIZE_NM, 'pore'))
+        out['tof_308K_50bar'] = float(tof(308, 50, SIZE_NM, 'pore'))
     print(json.dumps(out, indent=1, ensure_ascii=False))
     if a.out:
         with open(os.path.join(CALLER_CWD, a.out), 'w', encoding='utf8') as f:

@@ -7,7 +7,7 @@ the reduced network (energy check E8 > E10, see km_common.energy_check) are skip
 Examples (run from anywhere):
   python scripts/run_distributions.py                      
   python scripts/run_distributions.py --pressures 1 25 50 --modes flow \
-         --sizes 1e5 --tmin 300 --tmax 420 --tstep 30 --models corrected old --out my.csv
+         --sizes 1e5 --tmin 300 --tmax 420 --tstep 30 --models pore old --out my.csv
 """
 import argparse
 import os
@@ -33,7 +33,7 @@ def main(argv=None):
     ap.add_argument('--tmin', type=float, default=300)
     ap.add_argument('--tmax', type=float, default=540)
     ap.add_argument('--tstep', type=float, default=15)
-    ap.add_argument('--models', nargs='+', default=['corrected'], choices=['corrected', 'old', 'gas', 'ideal'])
+    ap.add_argument('--models', nargs='+', default=['pore'], choices=['pore', 'old', 'gas', 'ideal'])
     ap.add_argument('--elim-map', default='tetra', choices=['legacy', 'per_step', 'tetra'],
                     help="elimination constants: original list, or each olefin its own barrier (km.simulate)")
     ap.add_argument('--crowding', nargs='+', default=['none'], choices=['none', *km.CROWDING],
@@ -43,7 +43,7 @@ def main(argv=None):
     ap.add_argument('--ads-interp', action='store_true',
                     help='pore capacities linear in T between GCMC grid points (km.AdsInterpT)')
     ap.add_argument('--out', default=os.path.join(km.ROOT, 'results',
-                                                  'avg_olefin_vs_T_corrected_pressure_count.csv'))
+                                                  'avg_olefin_vs_T_pore_pressure_count.csv'))
     a = ap.parse_args(argv)
     a.out = os.path.join(CALLER_CWD, a.out)          # relative paths: from where you called it
 

@@ -4,11 +4,11 @@ Inputs are read relative to the working directory ('../data/structures', ...), s
 data/, where '../data' points back to the same folder.
 
 run_case() (used by run_model.py) exposes the two consistent variants under plain names:
-counting='pore' -> model='corrected', counting='gas' -> model='ideal'; barriers='tetra' /
+counting='pore' -> model='pore', counting='gas' -> model='ideal'; barriers='tetra' /
 'individual' / 'legacy' -> elim_map='tetra' / 'per_step' / 'legacy'. Details: docs/model.md.
 
 Ways of letting ethylene pressure enter in simulate() (see docs/model.md):
-  model='corrected'  Gibbs energies at p0 = 1 bar; pressure enters only through the
+  model='pore'  Gibbs energies at p0 = 1 bar; pressure enters only through the
                      GCMC pore concentration of ethylene (counted once).
   model='old'        Gibbs energies at the operating pressure AND pore concentration
                      (ethylene counted twice; previous version).
@@ -240,7 +240,7 @@ def energy_model(T, p, model):
     """fit: barrier model of simulate() for the given pressure treatment (factored out)."""
     if model == 'ideal':
         return EnergyBarriersEthylenePressure(temperature=T, pressure=p)
-    return EnergyBarriersSimplifyed(temperature=T, pressure=P0_CODE if model == 'corrected' else p)
+    return EnergyBarriersSimplifyed(temperature=T, pressure=P0_CODE if model == 'pore' else p)
 
 
 # BEP barrier model (elim_map='bep'): DFT points per step, the chain-length index n of the
@@ -320,7 +320,7 @@ def _theta_total(ts, T, mode):
     return float(min(max(th, 0.0), THETA_TOT_MAX))
 
 
-def simulate(T, p, mode='batch', particle_nm=None, model='corrected', hours=1.0,
+def simulate(T, p, mode='batch', particle_nm=None, model='pore', hours=1.0,
              n_steps=10_000, log_times=False, ads_interp=False, elim_map='tetra', crowding=None,
              s_pocket=None, ldf_alpha=None, n_max=None, site_frac=1.0, c2_lattice=False,
              product_crowding=False, check_network='warn'):
@@ -371,7 +371,7 @@ def simulate(T, p, mode='batch', particle_nm=None, model='corrected', hours=1.0,
     return dist, ts
 
 
-def _simulate_once(T, p, mode='batch', particle_nm=None, model='corrected', hours=1.0,
+def _simulate_once(T, p, mode='batch', particle_nm=None, model='pore', hours=1.0,
                    n_steps=10_000, log_times=False, ads_interp=False, elim_map='tetra', crowding=None,
                    s_pocket=None, ldf_alpha=None, n_max=None, site_frac=1.0, c2_lattice=False,
                    theta=None):
@@ -385,7 +385,7 @@ def _simulate_once(T, p, mode='batch', particle_nm=None, model='corrected', hour
       c2_lattice (False): ethylene as lattice gas too, gamma_C2 = 1/theta_v (same theta_v as the
         pocket); the forward constant of every reaction that consumes C2 (insertions and
         eliminations, CatCn(C2) + C2 <-> ...) is multiplied by gamma_C2, reverse unchanged, so K
-        changes by gamma_C2. Only model='corrected'.
+        changes by gamma_C2. Only model='pore'.
       product_crowding (False, set in simulate()): theta_v includes the products; theta (internal
         argument) is the total site fraction handed in by that iteration.
     ads_interp=True: pore capacities interpolated linearly in T (AdsInterpT).
@@ -395,21 +395,21 @@ def _simulate_once(T, p, mode='batch', particle_nm=None, model='corrected', hour
     constants, i.e. one barrier set for all chain lengths.
     'bep': every insertion and elimination from a BEP line through the three DFT points of its
     step type, chain-length dependence of dG_n by group additivity (bep_barriers()).
-    crowding (model='ideal' or 'corrected'): product release penalised by RT ln gamma_n,
+    crowding (model='ideal' or 'pore'): product release penalised by RT ln gamma_n,
     gamma_n from product_activity(); the forward elimination constant of each
     CatCn(C2) [+ C2] -> CatC2(C2) + Cn is divided by gamma_n (the _tetra elimination TS lies
-    after the olefin release), so K_elim changes by exactly 1 / gamma_n. With 'corrected' the
+    after the olefin release), so K_elim changes by exactly 1 / gamma_n. With 'pore' the
     legacy-like network is kept: [C2] and [Cn] stay in the rate laws as pore concentrations
     and only the released olefin gets an activity coefficient (ethylene keeps gamma = 1).
     Returns (distribution DataFrame [n, concentration, probability], time series with
     the index in real seconds)."""
     if model == 'ideal' and mode != 'flow':
         raise ValueError("model='ideal' needs mode='flow' (ethylene is not consumed)")
-    if c2_lattice and model != 'corrected':
-        raise ValueError("c2_lattice needs model='corrected' (ethylene in the rate laws)")
+    if c2_lattice and model != 'pore':
+        raise ValueError("c2_lattice needs model='pore' (ethylene in the rate laws)")
     eb = energy_model(T, p, model)
     # 'gas': pressure only through the DFT Gibbs profile; the pore ethylene is held at its
-    # 1 bar GCMC value, so 'gas' and 'corrected' are identical at 1 bar
+    # 1 bar GCMC value, so 'gas' and 'pore' are identical at 1 bar
     pa = np.array([(1.0 if model == 'gas' else p) * 101325.0])
     tk = np.array([float(T)])
     init = {'CatC2(C2)': CAT * site_frac, 'C2': float(C2_MODEL.predict_absolute(pa, tk)[0]),
@@ -464,8 +464,8 @@ def _simulate_once(T, p, mode='batch', particle_nm=None, model='corrected', hour
                                       fixed_concentrations=['C2', 'C2_out'] if mode == 'flow' else None)
     if crowding is not None:
         # product crowding: forward elimination divided by gamma_n
-        if model not in ('ideal', 'corrected') or crowding not in CROWDING:
-            raise ValueError(f"crowding needs model='ideal' or 'corrected' and one of {CROWDING}, "
+        if model not in ('ideal', 'pore') or crowding not in CROWDING:
+            raise ValueError(f"crowding needs model='ideal' or 'pore' and one of {CROWDING}, "
                              f"got {model!r}, {crowding!r}")
         for i, rx in enumerate(r._reactions):
             m = re.match(r'CatC\d+\(C2\)(?: \+ C2)? <-> CatC2\(C2\) \+ C(\d+)$', rx[0])
@@ -498,7 +498,7 @@ def _simulate_once(T, p, mode='batch', particle_nm=None, model='corrected', hour
     return dist, ts
 
 
-PRESSURE_COUNTING = {'pore': 'corrected', 'gas': 'ideal'}          # run_case name -> simulate model
+PRESSURE_COUNTING = {'pore': 'pore', 'gas': 'ideal'}          # run_case name -> simulate model
 BARRIER_SCHEMES = {'tetra': 'tetra', 'individual': 'per_step', 'legacy': 'legacy'}   # -> elim_map
 
 

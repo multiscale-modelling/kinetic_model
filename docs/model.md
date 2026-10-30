@@ -8,7 +8,7 @@ version. The `src/kinetic_model` package is unchanged; the changes are in the dr
 ```bash
 python scripts/run_model.py --T 300 340 380 420 --p 1                        # distribution, batch
 python scripts/run_model.py --T 390 --p 50 --counting gas --mode flow --size 1e6
-python scripts/run_distributions.py --models corrected --pressures 1 50     # grid -> results/*.csv
+python scripts/run_distributions.py --models pore --pressures 1 50     # grid -> results/*.csv
 python -m pytest tests/test_consistency.py -q                                # fast checks
 ```
 
@@ -17,7 +17,7 @@ Inputs are read from `data/` (the working directory is switched there on import)
 
 ## Pressure enters once
 
-| | `--counting pore` (default, `model='corrected'`) | `--counting gas` (`model='ideal'`) |
+| | `--counting pore` (default, `model='pore'`) | `--counting gas` (`model='ideal'`) |
 |---|---|---|
 | Gibbs profile | all gases at p0 = 1 bar | p0, then only ethylene shifted to p: (n_C2 - 5) RT ln(p/p0) |
 | ethylene in rate laws | GCMC pore concentration c(p, T) | removed (activity p/p0 is in dG) |
@@ -25,7 +25,7 @@ Inputs are read from `data/` (the working directory is switched there on import)
 
 Previous behaviour (`model='old'`): profile evaluated at p for *all* gases (including released
 olefins) and the pore concentration also multiplied the rates. Kept for comparison only.
-At 1 bar `old` and `corrected` coincide.
+At 1 bar `old` and `pore` coincide.
 
 ## Barriers (`--barriers`, `elim_map`)
 
