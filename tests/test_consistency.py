@@ -24,6 +24,7 @@ def reactions(T, p=1.0, elim_map='per_step', **kw):
         cap['rx'] = list(rx)
         return orig(rx, r_max)
     km.normilize_constants = grab
+    kw.setdefault('crowding', None)
     try:
         km.simulate(T, p, mode='batch', particle_nm=None, model='pore', hours=1e-9, n_steps=3,
                     elim_map=elim_map, **kw)
@@ -92,6 +93,15 @@ def test_crowding_shifts_K_by_gamma(T):
     g = km.product_activity(8, T, p, 'pocket', 3.0)
     k = 'CatC8(C2) + C2 <-> CatC2(C2) + C8'
     assert (a[k][1] / a[k][2]) / (c[k][1] / c[k][2]) == pytest.approx(g, rel=1e-9)
+
+
+def test_default_run_and_old_names():
+    """simulate(T, p) runs pocket crowding with s per barrier set; 'tetra' / 'tri' are accepted."""
+    T, p = 340.0, 30.0
+    assert reactions(T, p, 'flory-tetra', crowding='auto') == reactions(T, p, 'flory-tetra', crowding='pocket', s_pocket=3)
+    assert reactions(T, p, 'bep', crowding='auto') == reactions(T, p, 'bep', crowding='pocket', s_pocket=5)
+    assert reactions(T, p, 'tetra') == reactions(T, p, 'flory-tetra')
+    assert reactions(T, p, 'tri') == reactions(T, p, 'flory-tri')
 
 
 def test_batch_conserves_molecules_in_ldf():

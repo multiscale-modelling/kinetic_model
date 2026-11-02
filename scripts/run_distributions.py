@@ -34,9 +34,9 @@ def main(argv=None):
     ap.add_argument('--tmax', type=float, default=540)
     ap.add_argument('--tstep', type=float, default=15)
     ap.add_argument('--models', nargs='+', default=['pore'], choices=['pore', 'old', 'gas', 'ideal'])
-    ap.add_argument('--elim-map', default='tetra', choices=['legacy', 'per_step', 'tetra'],
-                    help="elimination constants: original list, or each olefin its own barrier (km.simulate)")
-    ap.add_argument('--crowding', nargs='+', default=['none'], choices=['none', *km.CROWDING],
+    ap.add_argument('--elim-map', default='flory-tetra', choices=['legacy', 'per_step', 'flory-tetra', 'flory-tri', 'bep'],
+                    help="barrier set (km.simulate)")
+    ap.add_argument('--crowding', nargs='+', default=['pocket'], choices=['none', *km.CROWDING],
                     help="product activity in the loaded pore (km.product_activity)")
     ap.add_argument('--hours', type=float, default=1.0, help='simulated time')
     ap.add_argument('--steps', type=int, default=10_000, help='output time points')

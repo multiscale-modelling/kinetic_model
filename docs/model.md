@@ -12,6 +12,14 @@ python scripts/run_distributions.py --models pore --pressures 1 50     # grid ->
 python -m pytest tests/test_consistency.py -q                                # fast checks
 ```
 
+From Python, temperature, pressure and the longest chain are enough:
+
+```python
+import km_common as km                     # scripts/
+dist, ts = km.simulate(380, 50, n_max=16)  # K, bar
+dist, ts = km.simulate(380, 50, n_max=16, elim_map='bep')
+```
+
 Inputs are read from `data/` (the working directory is switched there on import). Output goes to
 `results/`.
 
@@ -31,13 +39,14 @@ At 1 bar `old` and `pore` coincide.
 
 Three DFT sets: `_di` (C4), `_tri` (C6), `_tetra` (C8+).
 
-| | `tetra` (default) | `individual` (`per_step`) | `legacy` |
+| | `flory-tetra` (default) | `individual` (`per_step`) | `legacy` |
 |---|---|---|---|
 | growth C2->C4, C4->C6, C6+ | `_tetra` | `_di`, `_tri`, `_tetra` | `_di`, `_tri`, `_tetra` |
 | elimination C4 / C6 / C8+ | `_tetra` | `_di` / `_tri` / `_tetra` | `_tri` / `_tetra` / `_tetra` |
 | elimination in `bep` | BEP line through the DFT points per step type, chain-length extrapolation by group additivity |
 
-`legacy` is the original reaction list (eliminations shifted by one olefin).
+`legacy` is the original reaction list (eliminations shifted by one olefin). `flory-tri` is
+`flory-tetra` with the `_tri` set for every step. `tetra` / `tri` are accepted as earlier names.
 
 ## Product crowding (`crowding=`)
 
@@ -49,8 +58,12 @@ ethylene-loaded pore (`km.product_activity`, theta_v = 1 - theta_C2 from the eth
 | `none` | 1 |
 | `lattice` | 1/theta_v |
 | `multisite` | (1/theta_v)^(n/2) |
-| `pocket` | (1/theta_v)^3 (recommended) |
+| `pocket` | (1/theta_v)^s (default) |
 | `pressure` | p/p0 (reproduces `old`) |
+
+Default `s`: 3 for `flory-tetra` / `flory-tri`, 5 for `bep`, 3 otherwise (`km.DEFAULT_S_POCKET`);
+`s_pocket=` overrides it. `simulate(T, p, n_max=...)` alone uses pocket crowding; `crowding=None`
+switches it off.
 
 `product_crowding=True` iterates the total site fraction (ethylene + products) self-consistently.
 

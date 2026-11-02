@@ -8,7 +8,7 @@ Model options (README.md, section "run_model.py"):
   --counting  pore | gas          how ethylene pressure enters (pore: GCMC pore concentration in
                                   the rate laws; gas: ideal-gas activity p/p0 in the DFT profile,
                                   ethylene removed from the rate laws, flow only)
-  --barriers  tetra | individual | legacy
+  --barriers  flory-tetra | individual | legacy
                                   which DFT barriers the insertion and elimination steps use
   --mode      batch | flow        reactor mode (both allowed: --mode batch flow)
 
@@ -37,8 +37,8 @@ def parse_args(argv=None):
     ap.add_argument('--p', type=float, nargs='+', default=[1.0], help='ethylene pressure(s) in bar (default 1)')
     ap.add_argument('--counting', choices=list(km.PRESSURE_COUNTING), default='pore',
                     help='pressure counting: pore (GCMC pore concentration, default) or gas (ideal gas)')
-    ap.add_argument('--barriers', choices=list(km.BARRIER_SCHEMES), default='tetra',
-                    help='reaction scheme barriers: tetra (all steps _tetra, default), individual '
+    ap.add_argument('--barriers', choices=list(km.BARRIER_SCHEMES), default='flory-tetra',
+                    help='reaction scheme barriers: flory-tetra (all steps _tetra, default), individual '
                          '(each step its own), legacy (original list)')
     ap.add_argument('--mode', nargs='+', choices=['batch', 'flow'], default=['batch'],
                     help='reactor mode(s) (default batch)')
