@@ -62,7 +62,7 @@ def test_pressure_counted_once(T):
     for k in a:
         if '<D>' not in k:
             assert a[k][1:3] == pytest.approx(b[k][1:3], rel=1e-12)
-    c1, c50 = (float(km.C2_MODEL.predict_absolute(np.array([p * 101325.0]), np.array([T]))[0]) for p in (1, 50))
+    c1, c50 = (float(km.C2_MODEL.predict_absolute(np.array([p * 1e5]), np.array([T]))[0]) for p in (1, 50))
     assert c50 > c1
 
 

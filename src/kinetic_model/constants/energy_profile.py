@@ -30,7 +30,7 @@ class EnergyBarriers:
             models=models,
             ref_struc=ref_struc,
             pathways=pathways,
-            pressures=[pressure * 101325.0]  # Convert bar to Pa
+            pressures=[pressure * 1e5]  # bar to Pa
         )
 
         # Filter and sort

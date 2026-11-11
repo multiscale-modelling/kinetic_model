@@ -55,7 +55,7 @@ from kinetic_model.simulation.run_reactor import ReactorSimulationChemisorptionS
 
 DIFF_MODEL = '../data/processed/diffusion_extrap_model.pkl'
 ADS_MODEL = '../data/processed/knn_adsorption_slope_model.pkl'
-P0_CODE = 1e5 / 101325.0     # the code multiplies 'pressure' by 101325 Pa, so this is 1 bar
+P0_CODE = 1.0                # standard pressure p0 = 1 bar (all pressures are in bar)
 CAT = 1e-2                   # catalytic sites per unit cell
 N_MAX = 16
 C2_MODEL = joblib.load('../data/adsorption/pt_poly_model.pkl')
@@ -68,7 +68,7 @@ class _EthylenePressureProfile(EnergyBarriers):
 
     def __init__(self, temperature, pressure):
         EnergyBarriers.__init__(self, temperature, P0_CODE)
-        rt_ln_p = 8.314462618e-3 * temperature * np.log(pressure * 101325.0 / 1e5)   # kJ/mol
+        rt_ln_p = 8.314462618e-3 * temperature * np.log(pressure)   # kJ/mol, pressure in bar, p0 = 1 bar
         for order in self.energy_profile:
             key = 'TS_' + order if '-' in order else order
             self.energy_profile[order] += (GAS_FORMULAE[key]['ethylene'] - 5) * rt_ln_p
@@ -432,7 +432,7 @@ def _simulate_once(T, p, mode='batch', particle_nm=None, model='pore', hours=1.0
     eb = energy_model(T, p, model)
     # 'gas': pressure only through the DFT Gibbs profile; the pore ethylene is held at its
     # 1 bar GCMC value, so 'gas' and 'pore' are identical at 1 bar
-    pa = np.array([(1.0 if model == 'gas' else p) * 101325.0])
+    pa = np.array([(1.0 if model == 'gas' else p) * 1e5])   # bar to Pa
     tk = np.array([float(T)])
     init = {'CatC2(C2)': CAT * site_frac, 'C2': float(C2_MODEL.predict_absolute(pa, tk)[0]),
             'C2_out': float(C2_MODEL.predict_out(pa, tk)[0])}
