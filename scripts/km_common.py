@@ -8,7 +8,8 @@ counting='pore' -> model='pore', counting='gas' -> model='ideal'; barriers='flor
 'individual' / 'legacy' -> elim_map='flory-tetra' / 'per_step' / 'legacy'. Details: docs/model.md.
 
 simulate(T, p, n_max=...) alone is a complete run: pore counting, flory-tetra barriers, pocket
-crowding with s from the barrier set (DEFAULT_S_POCKET).
+crowding with s from the barrier set (DEFAULT_S_POCKET), ethylene as lattice gas
+(gamma_C2H4 = 1/theta_v, c2_lattice='auto' = on for 'pore').
 
 Ways of letting ethylene pressure enter in simulate() (see docs/model.md):
   model='pore'  Gibbs energies at p0 = 1 bar; pressure enters only through the
@@ -245,15 +246,18 @@ def network_consistency(T, p, tol=NETWORK_TOL):
 OLD_NAMES = {'elim_map': {'tetra': 'flory-tetra', 'tri': 'flory-tri'}}
 
 
-def resolve_defaults(model, elim_map, crowding, s_pocket):
+def resolve_defaults(model, elim_map, crowding, s_pocket, c2_lattice='auto'):
     """Options of simulate() that depend on each other: old barrier-set names, crowding='auto'
-    (pocket where the model allows crowding, else none), s_pocket=None (DEFAULT_S_POCKET)."""
+    (pocket where the model allows crowding, else none), s_pocket=None (DEFAULT_S_POCKET),
+    c2_lattice='auto' (on for 'pore', the only model with ethylene in the rate laws)."""
     elim_map = OLD_NAMES['elim_map'].get(elim_map, elim_map)
     if crowding == 'auto':
         crowding = 'pocket' if model in ('pore', 'ideal') else None
     if s_pocket is None:
         s_pocket = DEFAULT_S_POCKET.get(elim_map, S_POCKET)
-    return elim_map, crowding, s_pocket
+    if c2_lattice == 'auto':
+        c2_lattice = model == 'pore'
+    return elim_map, crowding, s_pocket, bool(c2_lattice)
 
 
 def energy_model(T, p, model):
@@ -342,7 +346,7 @@ def _theta_total(ts, T, mode):
 
 def simulate(T, p, mode='batch', particle_nm=None, model='pore', hours=1.0,
              n_steps=10_000, log_times=False, ads_interp=False, elim_map='flory-tetra', crowding='auto',
-             s_pocket=None, ldf_alpha=None, n_max=None, site_frac=1.0, c2_lattice=False,
+             s_pocket=None, ldf_alpha=None, n_max=None, site_frac=1.0, c2_lattice='auto',
              product_crowding=False, check_network='warn'):
     """Run one case (all knobs: see _simulate_once).
     check_network: 'warn' (default) runs and warns when the reduced network is
@@ -353,7 +357,7 @@ def simulate(T, p, mode='batch', particle_nm=None, model='pore', hours=1.0,
     gamma (pocket, and gamma_C2 if c2_lattice) with theta_v = 1 - theta_tot and rerun, up to
     PC_MAX_ITER reruns or until <n> changes by less than PC_TOL; the update is damped (factor
     0.5) once theta oscillates. Diagnostics of the last call in LAST_PC_INFO."""
-    elim_map, crowding, s_pocket = resolve_defaults(model, elim_map, crowding, s_pocket)
+    elim_map, crowding, s_pocket, c2_lattice = resolve_defaults(model, elim_map, crowding, s_pocket, c2_lattice)
     kw = dict(mode=mode, particle_nm=particle_nm, model=model, hours=hours, n_steps=n_steps,
               log_times=log_times, ads_interp=ads_interp, elim_map=elim_map, crowding=crowding,
               s_pocket=s_pocket, ldf_alpha=ldf_alpha, n_max=n_max, site_frac=site_frac,
@@ -394,7 +398,7 @@ def simulate(T, p, mode='batch', particle_nm=None, model='pore', hours=1.0,
 
 def _simulate_once(T, p, mode='batch', particle_nm=None, model='pore', hours=1.0,
                    n_steps=10_000, log_times=False, ads_interp=False, elim_map='flory-tetra', crowding='auto',
-                   s_pocket=None, ldf_alpha=None, n_max=None, site_frac=1.0, c2_lattice=False,
+                   s_pocket=None, ldf_alpha=None, n_max=None, site_frac=1.0, c2_lattice='auto',
                    theta=None):
     """Run one case. particle_nm=None means no diffusion (infinite crystal).
     calibration knobs (fit): s_pocket overrides the default s (DEFAULT_S_POCKET) for
@@ -403,10 +407,10 @@ def _simulate_once(T, p, mode='batch', particle_nm=None, model='pore', hours=1.0
     the _tri (hexene-path) constants for every step.
     more knobs (all default to the previous behaviour):
       site_frac (1.0): active-site fraction, initial CatC2(C2) = CAT * site_frac.
-      c2_lattice (False): ethylene as lattice gas too, gamma_C2 = 1/theta_v (same theta_v as the
-        pocket); the forward constant of every reaction that consumes C2 (insertions and
-        eliminations, CatCn(C2) + C2 <-> ...) is multiplied by gamma_C2, reverse unchanged, so K
-        changes by gamma_C2. Only model='pore'.
+      c2_lattice ('auto' = True for model='pore', else False): ethylene as lattice gas too,
+        gamma_C2 = 1/theta_v (same theta_v as the pocket); the forward constant of every reaction
+        that consumes C2 (insertions and eliminations, CatCn(C2) + C2 <-> ...) is multiplied by
+        gamma_C2, reverse unchanged, so K changes by gamma_C2. Only model='pore'.
       product_crowding (False, set in simulate()): theta_v includes the products; theta (internal
         argument) is the total site fraction handed in by that iteration.
     ads_interp=True: pore capacities interpolated linearly in T (AdsInterpT).
@@ -420,11 +424,12 @@ def _simulate_once(T, p, mode='batch', particle_nm=None, model='pore', hours=1.0
     gamma_n from product_activity(); the forward elimination constant of each
     CatCn(C2) [+ C2] -> CatC2(C2) + Cn is divided by gamma_n (the _tetra elimination TS lies
     after the olefin release), so K_elim changes by exactly 1 / gamma_n. With 'pore' the
-    legacy-like network is kept: [C2] and [Cn] stay in the rate laws as pore concentrations
-    and only the released olefin gets an activity coefficient (ethylene keeps gamma = 1).
+    legacy-like network is kept: [C2] and [Cn] stay in the rate laws as pore concentrations;
+    the released olefin gets gamma_n, ethylene gamma_C2 (c2_lattice, default on); reverse
+    constants unchanged.
     Returns (distribution DataFrame [n, concentration, probability], time series with
     the index in real seconds)."""
-    elim_map, crowding, s_pocket = resolve_defaults(model, elim_map, crowding, s_pocket)
+    elim_map, crowding, s_pocket, c2_lattice = resolve_defaults(model, elim_map, crowding, s_pocket, c2_lattice)
     if model == 'ideal' and mode != 'flow':
         raise ValueError("model='ideal' needs mode='flow' (ethylene is not consumed)")
     if c2_lattice and model != 'pore':
@@ -533,7 +538,8 @@ def run_case(T, p, counting='pore', barriers='flory-tetra', mode='batch', partic
     barriers: 'flory-tetra' = _tetra constants for every insertion and elimination; 'individual' = each
               step its own DFT barrier (C4 elimination _di, C6 _tri, C8+ _tetra); 'legacy' = the
               legacy list (eliminations shifted by one olefin).
-    Product crowding as in simulate() (pocket, s from DEFAULT_S_POCKET).
+    Product crowding and ethylene lattice gas as in simulate() (pocket, s from DEFAULT_S_POCKET;
+    c2_lattice on for counting='pore').
     Returns (dist, ts) as simulate()."""
     barriers = OLD_NAMES['elim_map'].get(barriers, barriers)
     if counting not in PRESSURE_COUNTING:

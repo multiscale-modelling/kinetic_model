@@ -65,6 +65,19 @@ Default `s`: 3 for `flory-tetra` / `flory-tri`, 5 for `bep`, 3 otherwise (`km.DE
 `s_pocket=` overrides it. `simulate(T, p, n_max=...)` alone uses pocket crowding; `crowding=None`
 switches it off.
 
+## Ethylene lattice gas (`c2_lattice=`)
+
+Ethylene in the filled pore also gets a lattice-gas activity coefficient, gamma_C2H4 = 1/theta_v
+(one site). The forward constant of every step that consumes ethylene (insertion and elimination,
+`CatCn(C2) + C2 <-> ...`) is multiplied by gamma_C2H4; reverse constants are unchanged:
+
+    r_ins  = k_ins [CatCn(C2)] gamma_C2H4 [C2]pore
+    r_elim = k_elim / gamma_n [CatCn(C2)] gamma_C2H4 [C2]pore
+    r_-ins = k_-ins [CatCn+2(C2)],   r_-elim = k_-elim [CatC2(C2)] [Cn]pore
+
+Default `c2_lattice='auto'`: on for `model='pore'` (the only model with ethylene in the rate laws),
+off otherwise; `c2_lattice=False` switches it off. Before 2026-11-18 the default was off.
+
 `product_crowding=True` iterates the total site fraction (ethylene + products) self-consistently.
 
 ## Network validity

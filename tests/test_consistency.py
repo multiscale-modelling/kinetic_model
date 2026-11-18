@@ -25,6 +25,7 @@ def reactions(T, p=1.0, elim_map='per_step', **kw):
         return orig(rx, r_max)
     km.normilize_constants = grab
     kw.setdefault('crowding', None)
+    kw.setdefault('c2_lattice', False)
     try:
         km.simulate(T, p, mode='batch', particle_nm=None, model='pore', hours=1e-9, n_steps=3,
                     elim_map=elim_map, **kw)
@@ -100,6 +101,8 @@ def test_default_run_and_old_names():
     T, p = 340.0, 30.0
     assert reactions(T, p, 'flory-tetra', crowding='auto') == reactions(T, p, 'flory-tetra', crowding='pocket', s_pocket=3)
     assert reactions(T, p, 'bep', crowding='auto') == reactions(T, p, 'bep', crowding='pocket', s_pocket=5)
+    assert reactions(T, p, 'flory-tetra', c2_lattice='auto') == reactions(T, p, 'flory-tetra', c2_lattice=True)
+    assert reactions(T, p, 'flory-tetra', c2_lattice='auto') != reactions(T, p, 'flory-tetra', c2_lattice=False)
     assert reactions(T, p, 'tetra') == reactions(T, p, 'flory-tetra')
     assert reactions(T, p, 'tri') == reactions(T, p, 'flory-tri')
 
