@@ -102,9 +102,32 @@ def test_default_run_and_old_names():
     assert reactions(T, p, 'flory-tetra', crowding='auto') == reactions(T, p, 'flory-tetra', crowding='pocket', s_pocket=3)
     assert reactions(T, p, 'bep', crowding='auto') == reactions(T, p, 'bep', crowding='pocket', s_pocket=5)
     assert reactions(T, p, 'flory-tetra', c2_lattice='auto') == reactions(T, p, 'flory-tetra', c2_lattice=True)
+    assert reactions(T, p, 'flory-tetra', c2_lattice='auto') == reactions(T, p, 'flory-tetra', c2_lattice='reverse')
     assert reactions(T, p, 'flory-tetra', c2_lattice='auto') != reactions(T, p, 'flory-tetra', c2_lattice=False)
     assert reactions(T, p, 'tetra') == reactions(T, p, 'flory-tetra')
     assert reactions(T, p, 'tri') == reactions(T, p, 'flory-tri')
+
+
+def test_c2_lattice_placements():
+    """'reverse' divides the reverse constant of each C2-consuming step by gamma_C2, 'forward'
+    multiplies its forward constant; K is the same, other steps are untouched."""
+    T, p = 320.0, 30.0
+    g = 1.0 / (1.0 - km.ethylene_filling(T, p))
+    off, rev, fwd = (reactions(T, p, 'per_step', c2_lattice=c) for c in (False, 'reverse', 'forward'))
+    n = 0
+    for k in off:
+        if re.match(r'CatC\d+\(C2\) \+ C2 <->', k):
+            n += 1
+            assert rev[k][1] == pytest.approx(off[k][1], rel=1e-12)
+            assert rev[k][2] == pytest.approx(off[k][2] / g, rel=1e-12)
+            assert fwd[k][1] == pytest.approx(off[k][1] * g, rel=1e-12)
+            assert fwd[k][2] == pytest.approx(off[k][2], rel=1e-12)
+            assert rev[k][1] / rev[k][2] == pytest.approx(fwd[k][1] / fwd[k][2], rel=1e-12)
+        else:
+            assert rev[k] == off[k] == fwd[k]
+    assert n > 0
+    with pytest.raises(ValueError):
+        reactions(T, p, 'per_step', c2_lattice='sideways')
 
 
 def test_batch_conserves_molecules_in_ldf():

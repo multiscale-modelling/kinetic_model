@@ -9,7 +9,8 @@ counting='pore' -> model='pore', counting='gas' -> model='ideal'; barriers='flor
 
 simulate(T, p, n_max=...) alone is a complete run: pore counting, flory-tetra barriers, pocket
 crowding with s from the barrier set (DEFAULT_S_POCKET), ethylene as lattice gas
-(gamma_C2H4 = 1/theta_v, c2_lattice='auto' = on for 'pore').
+(gamma_C2H4 = 1/theta_v, c2_lattice='auto' = 'reverse' for 'pore': the reverse constant of every
+ethylene-consuming step is divided by gamma_C2H4; 'forward' is the earlier placement).
 
 Ways of letting ethylene pressure enter in simulate() (see docs/model.md):
   model='pore'  Gibbs energies at p0 = 1 bar; pressure enters only through the
@@ -246,18 +247,27 @@ def network_consistency(T, p, tol=NETWORK_TOL):
 OLD_NAMES = {'elim_map': {'tetra': 'flory-tetra', 'tri': 'flory-tri'}}
 
 
+# placements of the ethylene activity coefficient gamma_C2H4 = 1/theta_v (c2_lattice=)
+C2_LATTICE = ('reverse', 'forward')
+
+
 def resolve_defaults(model, elim_map, crowding, s_pocket, c2_lattice='auto'):
     """Options of simulate() that depend on each other: old barrier-set names, crowding='auto'
     (pocket where the model allows crowding, else none), s_pocket=None (DEFAULT_S_POCKET),
-    c2_lattice='auto' (on for 'pore', the only model with ethylene in the rate laws)."""
+    c2_lattice='auto' ('reverse' for 'pore', the only model with ethylene in the rate laws,
+    else False); True = 'reverse'. Returns c2_lattice as 'reverse', 'forward' or False."""
     elim_map = OLD_NAMES['elim_map'].get(elim_map, elim_map)
     if crowding == 'auto':
         crowding = 'pocket' if model in ('pore', 'ideal') else None
     if s_pocket is None:
         s_pocket = DEFAULT_S_POCKET.get(elim_map, S_POCKET)
     if c2_lattice == 'auto':
-        c2_lattice = model == 'pore'
-    return elim_map, crowding, s_pocket, bool(c2_lattice)
+        c2_lattice = 'reverse' if model == 'pore' else False
+    elif c2_lattice is True:
+        c2_lattice = 'reverse'
+    if c2_lattice not in (False, None) + C2_LATTICE:
+        raise ValueError(f"c2_lattice must be 'auto', True, False or one of {C2_LATTICE}, got {c2_lattice!r}")
+    return elim_map, crowding, s_pocket, c2_lattice or False
 
 
 def energy_model(T, p, model):
@@ -407,10 +417,16 @@ def _simulate_once(T, p, mode='batch', particle_nm=None, model='pore', hours=1.0
     the _tri (hexene-path) constants for every step.
     more knobs (all default to the previous behaviour):
       site_frac (1.0): active-site fraction, initial CatC2(C2) = CAT * site_frac.
-      c2_lattice ('auto' = True for model='pore', else False): ethylene as lattice gas too,
-        gamma_C2 = 1/theta_v (same theta_v as the pocket); the forward constant of every reaction
-        that consumes C2 (insertions and eliminations, CatCn(C2) + C2 <-> ...) is multiplied by
-        gamma_C2, reverse unchanged, so K changes by gamma_C2. Only model='pore'.
+      c2_lattice ('auto' = 'reverse' for model='pore', else False; True = 'reverse'): ethylene as
+        lattice gas too, gamma_C2 = 1/theta_v (same theta_v as the pocket), applied to every
+        reaction that consumes C2 (insertions and eliminations, CatCn(C2) + C2 <-> ...):
+        'reverse' (default): reverse constant divided by gamma_C2, forward unchanged. The C2
+          taken from the pore is still free at the rate-limiting TS (TS 2-3, TS 6-1p), so
+          gamma_C2 cancels in the forward step and acts on the reverse one, as gamma_n does
+          for the released olefin.
+        'forward' (before 2026-11-24): forward constant multiplied by gamma_C2, reverse unchanged.
+        K changes by gamma_C2 in both; 'reverse' = 'forward' with every chemical rate divided by
+        gamma_C2. Only model='pore'.
       product_crowding (False, set in simulate()): theta_v includes the products; theta (internal
         argument) is the total site fraction handed in by that iteration.
     ads_interp=True: pore capacities interpolated linearly in T (AdsInterpT).
@@ -425,8 +441,8 @@ def _simulate_once(T, p, mode='batch', particle_nm=None, model='pore', hours=1.0
     CatCn(C2) [+ C2] -> CatC2(C2) + Cn is divided by gamma_n (the _tetra elimination TS lies
     after the olefin release), so K_elim changes by exactly 1 / gamma_n. With 'pore' the
     legacy-like network is kept: [C2] and [Cn] stay in the rate laws as pore concentrations;
-    the released olefin gets gamma_n, ethylene gamma_C2 (c2_lattice, default on); reverse
-    constants unchanged.
+    the released olefin gets gamma_n (on the forward elimination), ethylene gamma_C2 (c2_lattice,
+    default on the reverse constants).
     Returns (distribution DataFrame [n, concentration, probability], time series with
     the index in real seconds)."""
     elim_map, crowding, s_pocket, c2_lattice = resolve_defaults(model, elim_map, crowding, s_pocket, c2_lattice)
@@ -502,12 +518,14 @@ def _simulate_once(T, p, mode='batch', particle_nm=None, model='pore', hours=1.0
         r.solver = Reaction_Diffusion(reactions=r._reactions, capacity=r._capacity,
                                       fixed_concentrations=['C2', 'C2_out'] if mode == 'flow' else None)
     if c2_lattice:
-        # ethylene activity coefficient gamma_C2 = 1/theta_v on the forward constant of
-        # every reaction that consumes C2 (insertions, eliminations); reverse unchanged
+        # ethylene activity coefficient gamma_C2 = 1/theta_v on every reaction that consumes C2
+        # (insertions, eliminations): 'reverse' divides the reverse constant by gamma_C2,
+        # 'forward' multiplies the forward constant by it
         vac = 1.0 - (ethylene_filling(T, p) if theta is None else theta)
         for i, rx in enumerate(r._reactions):
             if re.match(r'CatC\d+\(C2\) \+ C2 <->', rx[0]):
-                r._reactions[i] = (rx[0], rx[1] / vac, rx[2])
+                r._reactions[i] = ((rx[0], rx[1], rx[2] * vac) if c2_lattice == 'reverse'
+                                   else (rx[0], rx[1] / vac, rx[2]))
         r.solver = Reaction_Diffusion(reactions=r._reactions, capacity=r._capacity,
                                       fixed_concentrations=['C2', 'C2_out'] if mode == 'flow' else None)
     if ldf_alpha is not None and particle_nm is not None:
@@ -539,7 +557,7 @@ def run_case(T, p, counting='pore', barriers='flory-tetra', mode='batch', partic
               step its own DFT barrier (C4 elimination _di, C6 _tri, C8+ _tetra); 'legacy' = the
               legacy list (eliminations shifted by one olefin).
     Product crowding and ethylene lattice gas as in simulate() (pocket, s from DEFAULT_S_POCKET;
-    c2_lattice on for counting='pore').
+    c2_lattice='reverse' for counting='pore').
     Returns (dist, ts) as simulate()."""
     barriers = OLD_NAMES['elim_map'].get(barriers, barriers)
     if counting not in PRESSURE_COUNTING:

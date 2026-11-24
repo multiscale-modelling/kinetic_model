@@ -68,15 +68,30 @@ switches it off.
 ## Ethylene lattice gas (`c2_lattice=`)
 
 Ethylene in the filled pore also gets a lattice-gas activity coefficient, gamma_C2H4 = 1/theta_v
-(one site). The forward constant of every step that consumes ethylene (insertion and elimination,
-`CatCn(C2) + C2 <-> ...`) is multiplied by gamma_C2H4; reverse constants are unchanged:
+(one site). It acts on every step that consumes ethylene (insertion and elimination,
+`CatCn(C2) + C2 <-> ...`). Two placements, with the same equilibrium constants:
 
-    r_ins  = k_ins [CatCn(C2)] gamma_C2H4 [C2]pore
-    r_elim = k_elim / gamma_n [CatCn(C2)] gamma_C2H4 [C2]pore
-    r_-ins = k_-ins [CatCn+2(C2)],   r_-elim = k_-elim [CatC2(C2)] [Cn]pore
+| `c2_lattice` | forward | reverse |
+|---|---|---|
+| `'reverse'` (default since 2026-11-24) | k_f | k_r / gamma_C2H4 |
+| `'forward'` (2026-11-18 to 2026-11-24) | k_f gamma_C2H4 | k_r |
 
-Default `c2_lattice='auto'`: on for `model='pore'` (the only model with ethylene in the rate laws),
-off otherwise; `c2_lattice=False` switches it off. Before 2026-11-18 the default was off.
+    r_ins  = k_ins [CatCn(C2)] [C2]pore          r_-ins  = k_-ins / gamma_C2H4 [CatCn+2(C2)]
+    r_elim = k_elim / gamma_n [CatCn(C2)] [C2]pore
+                                                  r_-elim = k_-elim / gamma_C2H4 [CatC2(C2)] [Cn]pore
+
+Why `'reverse'`: the activity coefficient of a species acts on the direction whose rate-limiting
+state holds that species free while its starting state does not. In the DFT profile the ethylene
+taken from the pore is still free at the insertion TS (TS 2-3: same ethylene count as
+CatCn(C2)) and at the elimination TS 6-1p; it binds afterwards. So gamma_C2H4 cancels in the
+forward step and slows the reverse one. The released olefin follows the same rule: it is free at
+the elimination TS, so gamma_n divides the forward elimination and cancels in the reverse.
+Moving gamma_C2H4 from forward to reverse divides every chemical rate by gamma_C2H4: equilibria
+are unchanged; the chemistry runs slower relative to diffusion and to the batch time.
+
+Default `c2_lattice='auto'`: `'reverse'` for `model='pore'` (the only model with ethylene in the
+rate laws), off otherwise; `True` = `'reverse'`; `c2_lattice=False` switches it off. Before
+2026-11-18 the default was off.
 
 `product_crowding=True` iterates the total site fraction (ethylene + products) self-consistently.
 
